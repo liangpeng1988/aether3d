@@ -1,0 +1,68 @@
+{
+  "name": "aether3d",
+  "private": false,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/engine/aether3d-engine.cjs.js",
+  "module": "dist/engine/aether3d-engine.es.js",
+  "unpkg": "dist/engine/aether3d-engine.umd.js",
+  "types": "dist/engine/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/engine/aether3d-engine.es.js",
+      "require": "./dist/engine/aether3d-engine.cjs.js",
+      "types": "./dist/engine/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/engine"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "dev:3dhome": "vite src/3dHome/index.html",
+    "dev:3dhome-lib": "vite src/3dHome/lib-example.html",
+    "dev:rect-area-light": "vite src/3dHome/rect-area-light-example.html",
+    "dev:log-depth-buffer": "vite src/3dHome/logarithmic-depth-buffer-example.html",
+    "dev:uv-animation": "vite src/3dHome/uv-animation-example.html",
+    "dev:heart-shader-animation": "vite src/3dHome/heart-shader-animation.html",
+    "dev:beam-effect": "vite src/3dHome/beam-effect-example.html",
+    "dev:air-conditioner-wind": "vite src/3dHome/air-conditioner-wind.html",
+    "dev:ribbon-shader": "vite src/3dHome/ribbon-shader-effect.html",
+    "dev:ribbon-effect": "vite src/3dHome/ribbon-effect-example.html",
+    "dev:ribbon-test": "vite src/3dHome/ribbon-test.html",
+    "dev:munich-university-tunnel": "vite src/3dHome/munich-university-tunnel-final.html",
+    "dev:wind-effect": "vite src/3dHome/wind-effect-simulation.html",
+    "build": "tsc && vite build",
+    "build:engine": "npm run build:engine-types && vite build --config vite.engine.config.ts",
+    "build:engine-types": "tsc --project tsconfig.engine.json",
+    "preview": "vite preview",
+    "docs:api": "typedoc",
+    "docs:api-serve": "typedoc --serve",
+    "test:renderer": "node dist/test/RendererTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@types/three": "^0.179.0",
+    "react": "^19.1.1",
+    "rollup": "^4.52.0",
+    "typedoc": "^0.28.12",
+    "typedoc-plugin-markdown": "^4.8.1",
+    "typescript": "~5.8.3",
+    "vite": "^5.4.10"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.35.0",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^9.3.0",
+    "@tweenjs/tween.js": "^25.0.0",
+    "eslint": "^9.35.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2",
+    "three": "^0.179.0"
+  }
+}

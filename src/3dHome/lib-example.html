@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether3d Engine Library Example</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+            font-family: 'Courier New', monospace;
+        }
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #controls button {
+            margin: 5px;
+            padding: 8px 12px;
+            background: #444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #controls button:hover {
+            background: #666;
+        }
+        #device-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #device-controls button {
+            margin: 5px;
+            padding: 8px 12px;
+            background: #444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #device-controls button:hover {
+            background: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>Aether3d Engine Library Example</h1>
+        <p>Using the packaged Aether3d Engine as a library with Custom Device Script</p>
+    </div>
+    <div id="canvas-container"></div>
+    
+    <div id="controls">
+        <button id="resetView">重置视角</button>
+        <button id="focusCube">聚焦立方体</button>
+        <button id="focusSphere">聚焦球体</button>
+        <button id="toggleRotate">切换自动旋转</button>
+    </div>
+    
+    <div id="device-controls">
+        <button id="toggleDevice">切换设备状态</button>
+        <button id="increaseSpeed">增加风速</button>
+        <button id="decreaseSpeed">减少风速</button>
+        <button id="changeColor">改变颜色</button>
+    </div>
+
+    <!-- 使用打包好的库 -->
+    <script type="module">
+        import { Aether3d, THREE, OrbitControlsScript } from '../../dist/engine/aether3d-engine.es.js';
+        import { CustomDeviceScript } from './CustomDeviceScript.js';
+
+        // 创建容器和 canvas
+        const container = document.getElementById('canvas-container');
+        const canvas = document.createElement('canvas');
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        container.appendChild(canvas);
+
+        // 配置视口
+        const config = {
+            element: canvas,
+            dpr: new THREE.Vector2(window.innerWidth, window.innerHeight),
+            alpha: true,
+            antialias: true,
+            factor: window.devicePixelRatio,
+            distance: 5,
+            aspect: window.innerWidth / window.innerHeight,
+            enablePostProcessing: false,
+            enablePerformanceMonitoring: true
+        };
+
+        // 创建引擎实例
+        const engine = new Aether3d(config);
+
+        // 设置背景色
+        engine.scene.background = new THREE.Color(0x222222);
+
+        // 添加光源
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        engine.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        engine.scene.add(directionalLight);
+
+        // 创建立方体
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0x00ff00,
+            shininess: 100 
+        });
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.set(0, 0, 0);
+        engine.scene.add(cube);
+
+        // 创建球体
+        const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+        const sphereMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xff0000,
+            shininess: 100 
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(2, 0, 0);
+        engine.scene.add(sphere);
+
+        // 创建平面
+        const planeGeometry = new THREE.PlaneGeometry(10, 10);
+        const planeMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x888888,
+            side: THREE.DoubleSide
+        });
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = Math.PI / 2;
+        plane.position.y = -1;
+        engine.scene.add(plane);
+
+        // 创建自定义设备实例
+        const device1 = new CustomDeviceScript(
+            "空调设备1",
+            new THREE.Vector3(-2, 0, 0),
+            new THREE.Euler(0, 0, 0),
+            new THREE.Vector3(1, 1, 1)
+        );
+        
+        // 将设备添加到场景中
+        engine.scene.add(device1.getDeviceObject());
+
+        // 设置相机位置
+        engine.camera.position.set(3, 3, 5);
+        engine.camera.lookAt(0, 0, 0);
+
+        // 创建并添加轨道控制器脚本
+        const orbitControlsScript = new OrbitControlsScript({
+            enableDamping: true,
+            dampingFactor: 0.05,
+            rotateSpeed: 0.5,
+            zoomSpeed: 1.2,
+            maxPolarAngle: THREE.MathUtils.degToRad(89),
+            minDistance: 3,
+            maxDistance: 20
+        });
+        engine.addScript(orbitControlsScript);
+
+        // 添加设备作为脚本到引擎中，以便自动调用update方法
+        engine.addScript(device1);
+
+        // 添加简单的旋转动画脚本
+        class RotationScript {
+            constructor(object, speed) {
+                this.object = object;
+                this.speed = speed;
+            }
+
+            update(deltaTime) {
+                if (this.object) {
+                    this.object.rotation.x += this.speed.x * deltaTime;
+                    this.object.rotation.y += this.speed.y * deltaTime;
+                }
+            }
+        }
+
+        // 创建旋转脚本实例
+        const cubeRotationScript = new RotationScript(cube, { x: 0.5, y: 0.5 });
+        const sphereRotationScript = new RotationScript(sphere, { x: 1, y: 1 });
+
+        // 在渲染循环中更新所有脚本
+        engine.on('render:frame', (event) => {
+            cubeRotationScript.update(event.deltaTime);
+            sphereRotationScript.update(event.deltaTime);
+        });
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            engine.resize();
+        });
+
+        // 启动引擎（必须在所有设置完成后调用）
+        engine.start();
+
+        // ==================== 控制按钮事件处理 ====================
+        // 相机控制按钮
+        document.getElementById('resetView').addEventListener('click', () => {
+            if (orbitControlsScript) {
+                // 重置相机到初始位置
+                engine.camera.position.set(3, 3, 5);
+                engine.camera.lookAt(0, 0, 0);
+                if (orbitControlsScript.orbitControls) {
+                    orbitControlsScript.orbitControls.target.set(0, 0, 0);
+                    orbitControlsScript.orbitControls.update();
+                }
+            }
+        });
+
+        document.getElementById('focusCube').addEventListener('click', () => {
+            if (orbitControlsScript) {
+                // 聚焦到立方体
+                orbitControlsScript.focusOnObject(cube);
+            }
+        });
+
+        document.getElementById('focusSphere').addEventListener('click', () => {
+            if (orbitControlsScript) {
+                // 聚焦到球体
+                orbitControlsScript.focusOnObject(sphere);
+            }
+        });
+
+        document.getElementById('toggleRotate').addEventListener('click', () => {
+            if (orbitControlsScript && orbitControlsScript.orbitControls) {
+                // 切换自动旋转
+                orbitControlsScript.orbitControls.autoRotate = !orbitControlsScript.orbitControls.autoRotate;
+            }
+        });
+
+        // 设备控制按钮
+        document.getElementById('toggleDevice').addEventListener('click', () => {
+            device1.toggleDevice();
+        });
+
+        document.getElementById('increaseSpeed').addEventListener('click', () => {
+            device1.increaseWindSpeed(0.5);
+        });
+
+        document.getElementById('decreaseSpeed').addEventListener('click', () => {
+            device1.decreaseWindSpeed(0.5);
+        });
+
+        document.getElementById('changeColor').addEventListener('click', () => {
+            device1.changeWindColor();
+        });
+
+        console.log('Aether3d Engine Library Example with Custom Device Script loaded successfully');
+    </script>
+</body>
+</html>

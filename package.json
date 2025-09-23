@@ -32,6 +32,7 @@
     "dev:ribbon-test": "vite src/3dHome/ribbon-test.html",
     "dev:munich-university-tunnel": "vite src/3dHome/munich-university-tunnel-final.html",
     "dev:wind-effect": "vite src/3dHome/wind-effect-simulation.html",
+    "dev:munich-demo": "vite src/3dHome/munich-demo.html --open",
     "build": "tsc && vite build",
     "build:engine": "npm run build:engine-types && vite build --config vite.engine.config.ts",
     "build:engine-types": "tsc --project tsconfig.engine.json",

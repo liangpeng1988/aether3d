@@ -19,8 +19,12 @@ export class StandardMaterialFactory implements IMaterialFactory {
     }
 
     applyConfig(material: THREE.Material, config: MaterialConfig): void {
-        material.transparent = config.transparent;
-        material.opacity = config.opacity;
+        if (config.transparent) {
+            material.transparent = config.transparent;
+        }
+        if (config.opacity != null) {
+            material.opacity = config.opacity;
+        }
         material.side = config.doubleSided ? THREE.DoubleSide : THREE.FrontSide;
     }
 }

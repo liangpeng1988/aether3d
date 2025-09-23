@@ -31,5 +31,5 @@
     /* JSX support */
     "jsx": "react-jsx",
   },
-  "include": ["src", "Engine"]
+  "include": ["src", "Engine", "js"]
 }

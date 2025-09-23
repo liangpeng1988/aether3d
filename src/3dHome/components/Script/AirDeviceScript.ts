@@ -137,15 +137,21 @@ export class AirDeviceScript extends ScriptBase {
                 if (!geometry.attributes && !geometry.attributes.uv1) return;
 
                 const materials = SetPBRDefaultOrHighlightMat(object);
-                this.defaultMaterial.set(object, materials.defaultMat as THREE.MeshStandardMaterial);
-                this.highlightMaterial.set(object, materials.highlightMat as ShaderGlowMaterial);
-                object.material =  materials.defaultMat as THREE.MeshStandardMaterial;
-                object.material.needsUpdate = true;
+                // 检查材质是否成功创建
+                if (materials.defaultMat && materials.highlightMat) {
+                    this.defaultMaterial.set(object, materials.defaultMat as THREE.MeshStandardMaterial);
+                    this.highlightMaterial.set(object, materials.highlightMat as ShaderGlowMaterial);
+                    object.material = materials.defaultMat as THREE.MeshStandardMaterial;
+                    object.material.needsUpdate = true;
+                }
             }
 
             if (object.name === 'Arc001' && object instanceof THREE.Mesh) {
-                object.material = this.animationMaterial as THREE.MeshStandardMaterial;
-                object.material.needsUpdate = true;
+                // 检查 animationMaterial 是否已加载
+                if (this.animationMaterial) {
+                    object.material = this.animationMaterial as THREE.MeshStandardMaterial;
+                    object.material.needsUpdate = true;
+                }
                 this.engine()?.disableSelection(object.name);
             }
         });

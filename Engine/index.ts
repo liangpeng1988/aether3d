@@ -23,9 +23,17 @@ export * from './controllers/RectAreaLightScript';
 export * from './controllers/GLBLoaderScript';
 export * from './controllers/UVAnimationScript';
 export * from './controllers/EnvironmentMapScript'
-export * from './controllers/CSS2DLabelScript'
 export * from './controllers/Edit/PointLightScript'
 export * from './controllers/FPSOptimizerScript'
+export * from './controllers/CAD/CADLineDrawingScript';
+export * from './controllers/ModelEditorScript';
+export * from './controllers/CSS2DLabelScript';
+
+// CAD模块
+export * from './controllers/CAD/LineBase';
+export * from './controllers/CAD/LineTypes';
+export * from './controllers/CAD/LineFactory';
+export * from './controllers/CAD/CADExample';
 
 // Events
 export * from './events/EventEmitter';
@@ -35,6 +43,7 @@ export * from './interface/IScript';
 export * from './interface/IRenderer';
 export * from './interface/ISystem';
 export * from './interface/SceneData';
+export * from './interface/Viewport';
 
 // 只导出类型定义，不导出具体实现
 export type { IMaterialFactory } from './materials/MaterialFactory';

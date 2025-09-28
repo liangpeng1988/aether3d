@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Aether3d } from '../../Engine';
 import { EnvironmentMapScript } from '../../Engine';
 import { GLBLoaderScript } from '../../Engine';
@@ -18,6 +19,7 @@ import OverviewPanel from './components/OverviewPanel';
 import FloorPlanPanel from './components/FloorPlanPanel';
 
 const Home3D: React.FC = () => {
+  const navigate = useNavigate();
   const rendererRef = useRef<Aether3d | null>(null);
   const environmentMapScriptRef = useRef<EnvironmentMapScript | null>(null);
   const glbLoaderScriptRef = useRef<GLBLoaderScript | null>(null);
@@ -26,6 +28,11 @@ const Home3D: React.FC = () => {
   // 处理点击事件的函数
   const handleItemClick = (item: string) => {
     console.log(`点击了 ${item}`);
+  };
+
+  // 导航到LibreDWG测试页面
+  const handleNavigateToTest = () => {
+    navigate('/libredwg-test');
   };
 
   // 场景准备就绪的回调函数
@@ -141,6 +148,25 @@ const Home3D: React.FC = () => {
                     onToggle={() => handleItemClick('窗帘')}
                     status="OFF"
                   />
+                  
+                  {/* LibreDWG测试页面导航按钮 */}
+                  <div style={{ padding: '10px', textAlign: 'center' }}>
+                    <button 
+                      onClick={handleNavigateToTest}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      测试LibreDWG库
+                    </button>
+                  </div>
+                  
                   {/* 总览面板组件 */}
                   <OverviewPanel
                     onOverviewClick={() => handleItemClick('全屋总览')}

@@ -52,6 +52,7 @@ export { AnimationMaterial } from './materials/AnimationMaterial';
 export { ShaderGlowMaterial } from './materials/ShaderGlowMaterial';
 export { WindMaterial } from './materials/WindMaterial';
 export { RibbonMaterial } from './materials/RibbonMaterial';
+export { BeforeMaterial } from './materials/BeforeMaterial';
 
 // Math
 export * from './math/Math';

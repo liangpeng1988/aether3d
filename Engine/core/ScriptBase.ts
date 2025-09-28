@@ -2,6 +2,8 @@ import { THREE } from "./global";
 import type { IScript } from "../interface";
 import type { Aether3d } from "./Aether3d";
 import type { PostProcessingEffectComposer } from "./PostProcessingEffectComposer";
+import { v4 as uuidv4 } from "uuid";
+
 
 /**
  * ScriptBase 类为所有脚本提供基础实现
@@ -16,7 +18,7 @@ export class ScriptBase implements IScript {
     /**
      * 脚本的唯一标识符
      */
-    public uuid?: string;
+    private _uuid: string;
 
     /**
      * 脚本附加到的宿主对象
@@ -39,6 +41,20 @@ export class ScriptBase implements IScript {
         throw new Error('Renderer not available');
     }
 
+    /**
+     * 构造函数 - 初始化UUID
+     */
+    constructor() {
+        this._uuid = uuidv4();
+    }
+
+    /**
+     * 获取脚本的唯一标识符
+     */
+    public get uuid(): string {
+        return this._uuid;
+    }
+    
     /**
      * 相机对象的便捷访问
      */
@@ -103,6 +119,7 @@ export class ScriptBase implements IScript {
      */
     public addScript(script: IScript): void{
         if (this.renderer) {
+            // UUID 已在构造函数中生成，无需重新生成
             this.renderer.addScript(script);
         }
     }

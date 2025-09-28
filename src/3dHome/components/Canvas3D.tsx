@@ -196,7 +196,7 @@ const Canvas3D = React.forwardRef<Scene3DHandle, Scene3DProps>((props, ref) => {
       maxPolarAngle: THREE.MathUtils.degToRad(89), // 将角度转换为弧度
       minDistance: 3,   // 最小缩放距离
       maxDistance: 20,  // 最大缩放距离
-      enableRotate: false,
+      enableRotate: true,
       enableZoom: false,
       enablePan:false,
     });
@@ -248,6 +248,13 @@ const Canvas3D = React.forwardRef<Scene3DHandle, Scene3DProps>((props, ref) => {
         props.onModelsLoaded?.();
       }, 0);
     }
+
+    // const shicecurrent = new AirDeviceScript(glbLoaderScriptRef.current, {model: '/ao/cezhi.glb',
+    //   name: 'AiruyDevice',
+    //   position: [0,0, 0],
+    //   rotation: [0, Math.PI/2, 0],
+    //   scale: [1,1, 1]});
+    // engine.addScript(shicecurrent);
 
     airDeviceRef.current = new AirDeviceScript(glbLoaderScriptRef.current, {model: '/ao/lishikongtiao.glb',
       name: 'Air Device',

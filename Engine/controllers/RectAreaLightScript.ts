@@ -28,7 +28,8 @@ export interface RectAreaLightConfig {
     labelContent?: string;
     /** 标签是否可点击 */
     clickableLabels?: boolean;
-
+    /** 标签开关回调函数 */
+    onToggle?: (isEnabled: boolean, script: RectAreaLightScript) => void;
 }
 
 /**
@@ -43,7 +44,6 @@ export interface RectAreaLightConfig {
  */
 export class RectAreaLightScript extends ScriptBase {
     name = 'RectAreaLightScript';
-
     // 灯光相关属性
     private config: Required<RectAreaLightConfig>;
     private rectAreaLight: THREE.RectAreaLight | null = null;
@@ -51,10 +51,14 @@ export class RectAreaLightScript extends ScriptBase {
     private label: CSS2DObject | null = null;
     private labelElement: HTMLElement | null = null;
     private isLightEnabled: boolean = true;
-    private isTweenEnabled: boolean = false;
+    private isTweenEnabled: boolean = true;
     private static uniformsLibInitialized: boolean = false;
-    private openTweens: TWEEN.Tween | null = null;
-    private closeTweens: TWEEN.Tween | null = null;
+    private intensityTween: TWEEN.Tween | null = null;
+    private currentIntensity: number = 0;
+    private targetIntensity: number = 0;
+
+    // 标签开关回调函数
+    private onToggleCallback?: (isEnabled: boolean, script: RectAreaLightScript) => void;
 
 
     constructor(options?: RectAreaLightConfig) {
@@ -73,10 +77,15 @@ export class RectAreaLightScript extends ScriptBase {
             labelContent: '矩形区域光',
             clickableLabels: true,
             ...options
-        };
+        } as Required<RectAreaLightConfig>;
+
+        // 保存标签开关回调函数
+        this.onToggleCallback = options?.onToggle;
 
         // 默认情况下灯光是关闭的
         this.isLightEnabled = false;
+        this.currentIntensity = 0;
+        this.targetIntensity = this.config.intensity;
     }
 
     /**
@@ -114,7 +123,12 @@ export class RectAreaLightScript extends ScriptBase {
      */
     public override update(deltaTime: number): void {
         super.update?.(deltaTime);
-
+        
+        // 更新强度缓动动画
+        if (this.intensityTween) {
+            this.intensityTween.update();
+        }
+        
         // 更新标签位置
         if (this.label && this.rectAreaLight) {
             this.label.position.copy(this.rectAreaLight.position);
@@ -278,7 +292,17 @@ export class RectAreaLightScript extends ScriptBase {
         }
 
         if (newConfig.intensity !== undefined) {
-            this.rectAreaLight.intensity = newConfig.intensity;
+            this.config.intensity = newConfig.intensity;
+            this.targetIntensity = newConfig.intensity;
+            
+            if (this.isTweenEnabled && this.isLightEnabled) {
+                // 使用缓动过渡到新强度
+                this.animateIntensity(newConfig.intensity);
+            } else if (this.isLightEnabled) {
+                // 直接设置强度
+                this.rectAreaLight.intensity = newConfig.intensity;
+                this.currentIntensity = newConfig.intensity;
+            }
         }
 
         if (newConfig.width !== undefined) {
@@ -332,9 +356,11 @@ export class RectAreaLightScript extends ScriptBase {
             if (show) {
                 // 渐显效果
                 this.label.visible = true;
-                // 强制重绘后触发动画
-                requestAnimationFrame(() => {
-                    this.labelElement!.style.opacity = '1';
+                // 使用微任务而非 requestAnimationFrame 来避免性能问题
+                Promise.resolve().then(() => {
+                    if (this.labelElement) {
+                        this.labelElement.style.opacity = '1';
+                    }
                 });
             } else {
                 // 渐隐效果
@@ -411,21 +437,41 @@ export class RectAreaLightScript extends ScriptBase {
     public toggleLight(): void {
         this.isLightEnabled = !this.isLightEnabled;
 
+        // 触发标签开关回调
+        this.triggerToggleCallback();
+
         // 控制矩形区域光
         if (this.rectAreaLight) {
-            this.rectAreaLight.visible = this.isLightEnabled;
-            this.rectAreaLight.intensity = this.isLightEnabled ? this.config.intensity : 0;
+            this.rectAreaLight.visible = true; // 始终可见，通过强度控制
+            
+            if (this.isTweenEnabled) {
+                // 使用缓动过渡强度 - 开关时使用更快的动画
+                const duration = this.isLightEnabled ? 600 : 400; // 开灯稍慢，关灯更快
+                this.animateIntensity(this.isLightEnabled ? this.config.intensity : 0, duration);
+            } else {
+                // 直接设置强度
+                this.rectAreaLight.intensity = this.isLightEnabled ? this.config.intensity : 0;
+                this.currentIntensity = this.rectAreaLight.intensity;
+            }
         }
 
-        // 控制辅助器
+        // 控制辅助器 - 添加延迟动画
         if (this.rectAreaLightHelper) {
-            this.rectAreaLightHelper.visible = this.isLightEnabled;
+            if (this.isLightEnabled) {
+                // 开灯时立即显示辅助器
+                this.rectAreaLightHelper.visible = true;
+            } else {
+                // 关灯时延迟隐藏辅助器，等强度动画完成
+                setTimeout(() => {
+                    if (this.rectAreaLightHelper && !this.isLightEnabled) {
+                        this.rectAreaLightHelper.visible = false;
+                    }
+                }, this.isTweenEnabled ? 450 : 0);
+            }
         }
 
-        // 更新标签样式
-        this.updateLabelStyle();
-
-        console.log(`[RectAreaLightScript] 矩形区域光已${this.isLightEnabled ? '开启' : '关闭'}`);
+        // 更新标签样式 - 添加动画效果
+        this.updateLabelStyleAnimated();
     }
 
     /**
@@ -447,6 +493,16 @@ export class RectAreaLightScript extends ScriptBase {
     }
 
     /**
+     * 快速开关（无动画）
+     */
+    public toggleLightInstant(): void {
+        const wasEnabled = this.isTweenEnabled;
+        this.isTweenEnabled = false;
+        this.toggleLight();
+        this.isTweenEnabled = wasEnabled;
+    }
+
+    /**
      * 检查灯光是否开启
      */
     public isLightOn(): boolean {
@@ -454,58 +510,208 @@ export class RectAreaLightScript extends ScriptBase {
     }
 
     /**
-     * 更新标签样式以反映灯光状态
+     * 保持向后兼容的更新标签样式方法
      */
     private updateLabelStyle(): void {
-        if (this.labelElement) {
-            // 根据灯光状态更新背景色 - LiquidGlass效果
-            if (this.isLightEnabled) {
-                this.labelElement.style.background = 'rgba(255, 255, 255, 0.08)';
-                this.labelElement.style.border = '1px solid rgba(255, 255, 255, 0.15)';
-                this.labelElement.style.boxShadow = `
-                    0 4px 30px rgba(0, 0, 0, 0.1),
-                    inset 0 0 10px rgba(255, 255, 255, 0.1)
-                `;
-            } else {
-                this.labelElement.style.background = 'rgba(100, 100, 100, 0.08)';
-                this.labelElement.style.border = '1px solid rgba(150, 150, 150, 0.15)';
-                this.labelElement.style.boxShadow = `
-                    0 4px 30px rgba(0, 0, 0, 0.1),
-                    inset 0 0 10px rgba(150, 150, 150, 0.1)
-                `;
-            }
+        this.updateLabelStyleAnimated();
+    }
 
-            // 更新图标
-            this.updateLabelIcon();
+    /**
+     * 保持向后兼容的更新图标方法
+     */
+    private updateLabelIcon(): void {
+        this.updateLabelIconAnimated();
+    }
+
+    /**
+     * 带动画效果的标签样式更新
+     */
+    private updateLabelStyleAnimated(): void {
+        if (!this.labelElement) return;
+        // 根据灯光状态更新背景色和样式 - LiquidGlass效果
+        if (this.isLightEnabled) {
+            // 开灯状态 - 明亮效果
+            this.labelElement.style.background = 'rgba(255, 255, 255, 0.12)';
+            this.labelElement.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+            this.labelElement.style.boxShadow = `
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                inset 0 0 16px rgba(255, 255, 255, 0.15),
+                0 0 20px rgba(255, 255, 255, 0.1)
+            `;
+        } else {
+            // 关灯状态 - 暗淡效果
+            this.labelElement.style.background = 'rgba(100, 100, 100, 0.08)';
+            this.labelElement.style.border = '1px solid rgba(150, 150, 150, 0.12)';
+            this.labelElement.style.boxShadow = `
+                0 4px 20px rgba(0, 0, 0, 0.08),
+                inset 0 0 8px rgba(150, 150, 150, 0.08)
+            `;
+        }
+
+        // 更新图标
+        this.updateLabelIconAnimated();
+    }
+
+    /**
+     * 动画过程中实时更新标签透明度
+     */
+    private updateLabelOpacityDuringAnimation(progress: number): void {
+        if (!this.labelElement) return;
+        
+        // 根据强度进度调整标签的视觉效果
+        const opacity = 0.7 + (progress * 0.3); // 0.7 到 1.0 之间
+        this.labelElement.style.opacity = opacity.toString();
+    }
+
+    /**
+     * 带动画效果的图标更新
+     */
+    private updateLabelIconAnimated(): void {
+        if (!this.labelElement) return;
+
+        const iconElement = this.labelElement.querySelector('.rect-area-light-icon') as HTMLImageElement;
+        if (iconElement) {
+            // 添加图标过渡动画
+            iconElement.style.transition = 'all 0.25s ease-in-out';
+            
+            // 根据灯光状态设置图标
+            iconElement.src = 'https://lanhu-oss-2537-2.lanhuapp.com/FigmaDDSSlicePNG242ac23827c6159d8038b7d4dbbc8937.png';
+            
+            if (this.isLightEnabled) {
+                // 开启状态 - 明亮效果
+                iconElement.style.opacity = '1';
+            } else {
+                // 关闭状态 - 暗淡效果
+                iconElement.style.opacity = '0.6';
+            }
         }
     }
 
     /**
-     * 更新标签图标以反映灯光状态
+     * 强度缓动动画
      */
-    private updateLabelIcon(): void {
-        if (this.labelElement) {
-            const iconElement = this.labelElement.querySelector('.rect-area-light-icon') as HTMLImageElement;
-            if (iconElement) {
-                // 根据灯光状态设置图标图片，使用LightControl.tsx中的图片
-                if (this.isLightEnabled) {
-                    // 使用开启状态的图片
-                    iconElement.src = 'https://lanhu-oss-2537-2.lanhuapp.com/FigmaDDSSlicePNG242ac23827c6159d8038b7d4dbbc8937.png';
-                } else {
-                    // 使用关闭状态的图片（如果需要不同的图片）
-                    // 如果没有专门的关闭图片，可以使用相同的图片或者添加透明度效果
-                    iconElement.src = 'https://lanhu-oss-2537-2.lanhuapp.com/FigmaDDSSlicePNG242ac23827c6159d8038b7d4dbbc8937.png';
-                    // 可以添加透明度效果来表示关闭状态
-                    iconElement.style.opacity = '1';
-                }
+    private animateIntensity(targetIntensity: number, duration: number = 500): void {
+        if (!this.rectAreaLight || !this.isTweenEnabled) {
+            return;
+        }
 
-                // 如果开/关状态使用相同的图片，通过透明度区分
-                if (this.isLightEnabled) {
-                    iconElement.style.opacity = '1';
-                } else {
-                    iconElement.style.opacity = '0.5';
-                }
+        // 停止当前的强度动画
+        if (this.intensityTween) {
+            this.intensityTween.stop();
+            this.intensityTween = null;
+        }
+
+        this.targetIntensity = targetIntensity;
+        const startIntensity = this.currentIntensity;
+        // 根据开关状态选择不同的缓动效果
+        const easingFunction = targetIntensity > 0 
+            ? TWEEN.Easing.Cubic.Out    // 开灯：快速启动，缓慢结束
+            : TWEEN.Easing.Cubic.In;    // 关灯：缓慢启动，快速结束
+
+        // 创建强度缓动动画
+        try {
+            this.intensityTween = new TWEEN.Tween({ intensity: startIntensity })
+                .to({ intensity: targetIntensity }, duration)
+                .easing(easingFunction)
+                .onUpdate((object) => {
+                    if (this.rectAreaLight) {
+                        this.currentIntensity = object.intensity;
+                        this.rectAreaLight.intensity = object.intensity;
+                        this.updateLabelOpacityDuringAnimation(object.intensity / this.config.intensity);
+                    }
+                })
+                .onComplete(() => {
+                    this.currentIntensity = targetIntensity;
+                    this.intensityTween = null;
+                    if (targetIntensity === 0 && this.rectAreaLight) {
+                        this.rectAreaLight.visible = false;
+                    }
+                })
+                .start();
+        } catch (error) {
+            console.error('[RectAreaLightScript] 创建动画失败:', error);            
+            // 如果动画创建失败，直接设置强度
+            if (this.rectAreaLight) {
+                this.rectAreaLight.intensity = targetIntensity;
+                this.currentIntensity = targetIntensity;
             }
+        }
+    }
+
+    /**
+     * 设置强度缓动持续时间
+     */
+    public setIntensityAnimationDuration(duration: number): void {
+        // 保存为实例属性以供后续使用
+        (this as any).animationDuration = duration;
+    }
+
+    /**
+     * 启用/禁用强度缓动
+     */
+    public setTweenEnabled(enabled: boolean): void {
+        this.isTweenEnabled = enabled;
+        
+        // 如果禁用缓动，停止当前动画并直接设置强度
+        if (!enabled && this.intensityTween) {
+            this.intensityTween.stop();
+            this.intensityTween = null;
+            
+            if (this.rectAreaLight) {
+                this.rectAreaLight.intensity = this.isLightEnabled ? this.config.intensity : 0;
+                this.currentIntensity = this.rectAreaLight.intensity;
+            }
+        }
+    }
+
+    /**
+     * 获取当前强度值
+     */
+    public getCurrentIntensity(): number {
+        return this.currentIntensity;
+    }
+
+    /**
+     * 获取目标强度值
+     */
+    public getTargetIntensity(): number {
+        return this.targetIntensity;
+    }
+
+    /**
+     * 设置强度（支持缓动）
+     */
+    public setIntensity(intensity: number, animated: boolean = true): void {
+        this.config.intensity = intensity;
+        this.targetIntensity = intensity;
+        
+        if (this.rectAreaLight && this.isLightEnabled) {
+            if (animated && this.isTweenEnabled) {
+                this.animateIntensity(intensity);
+            } else {
+                this.rectAreaLight.intensity = intensity;
+                this.currentIntensity = intensity;
+            }
+        }
+    }
+
+    /**
+     * 设置标签开关回调函数
+     */
+    public setOnToggle(callback?: (isEnabled: boolean, script: RectAreaLightScript) => void): void {
+        this.onToggleCallback = callback;
+    }
+
+    /**
+     * 触发标签开关回调
+     */
+    private triggerToggleCallback(): void {
+        try {
+            if (this.onToggleCallback) {
+                this.onToggleCallback(this.isLightEnabled, this);
+            }
+        } catch (error) {
+            console.error('[RectAreaLightScript] 标签开关回调执行失败:', error);
         }
     }
 
@@ -514,6 +720,12 @@ export class RectAreaLightScript extends ScriptBase {
      */
     public override destroy(): void {
         super.destroy?.();
+
+        // 停止强度动画
+        if (this.intensityTween) {
+            this.intensityTween.stop();
+            this.intensityTween = null;
+        }
 
         // 清理矩形区域光
         if (this.rectAreaLight && this.scene) {

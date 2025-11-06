@@ -14,9 +14,18 @@ export default defineConfig({
       output: {
         // 确保 UMD 格式正确暴露到全局作用域
         name: 'Aether3dEngine',
-        extend: true
+        extend: true,
+        // 将CSS内容也输出到单独的文件
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return 'style.css'
+          }
+          return assetInfo.name || 'assets/[name][extname]'
+        }
       }
-    }
+    },
+    // 确保CSS被提取
+    cssCodeSplit: false
   },
   define: {
     global: 'globalThis'

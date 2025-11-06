@@ -1,4 +1,4 @@
-import { THREE,TWEEN} from "../core/global.ts";
+import { THREE,TWEEN,TweenGroup} from "../core/global.ts";
 import { ScriptBase } from "../core/ScriptBase";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -228,10 +228,6 @@ export class OrbitControlsScript extends ScriptBase {
         if (this.orbitControls && this._enabled) {
             this.orbitControls.update();
         }
-
-        // 更新TWEEN动画
-        this.tween?.update();
-        this.tweenBack?.update();
     }
 
     public override onResize(): void {
@@ -382,7 +378,7 @@ export class OrbitControlsScript extends ScriptBase {
           targetX: startTarget.x,
           targetY: startTarget.y,
           targetZ: startTarget.z
-        })
+        },TweenGroup)
           .to({
             x: targetPosition.x,
             y: targetPosition.y,
@@ -556,7 +552,7 @@ export class OrbitControlsScript extends ScriptBase {
               targetX: startTarget.x,
               targetY: startTarget.y,
               targetZ: startTarget.z
-            })
+            },TweenGroup)
               .to({
                 x: targetPositionVec.x,
                 y: targetPositionVec.y,

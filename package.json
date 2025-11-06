@@ -33,6 +33,8 @@
     "dev:munich-university-tunnel": "vite src/3dHome/munich-university-tunnel-final.html",
     "dev:wind-effect": "vite src/3dHome/wind-effect-simulation.html",
     "dev:munich-demo": "vite src/3dHome/munich-demo.html --open",
+    "dev:radar-scan": "vite src/3dHome/radar-scan.html --port 3001 --open",
+    "dev:alignment": "vite Engine/alignment/example.html --port 3002 --open",
     "build": "tsc && vite build",
     "build:engine": "npm run build:engine-types && vite build --config vite.engine.config.ts",
     "build:engine-types": "tsc --project tsconfig.engine.json",

@@ -1,6 +1,7 @@
 import { THREE } from "../core/global.ts";
 import { ScriptBase } from "../core/ScriptBase";
-import { ObjectPool } from "../core";
+import { ObjectPool, LayerManager } from "../core";
+import { LayerManagerService } from "../../src/cad/controllers/LayerManagerService";
 
 /**
  * 鼠标交互配置接口
@@ -23,6 +24,10 @@ export interface MouseInteractionConfig {
     excludeTypes?: string[];
     /** 性能优化：射线检测频率（毫秒），默认为16ms（约60FPS） */
     raycastInterval?: number;
+    /** 图层ID排除列表，用于基于图层的排除机制 */
+    excludeLayerIds?: string[];
+    /** 是否启用图层可见性检查 */
+    checkLayerVisibility?: boolean;
 }
 
 export class MouseInteractionScript extends ScriptBase {
@@ -75,6 +80,8 @@ export class MouseInteractionScript extends ScriptBase {
             excludeObjects: [],           // 默认不排除任何对象
             excludeTypes: [],             // 默认不排除任何对象类型
             raycastInterval: 16,          // 默认射线检测间隔16ms（约60FPS）
+            excludeLayerIds: [],          // 默认不排除任何图层
+            checkLayerVisibility: true,   // 默认检查图层可见性
             ...options                    // 覆盖用户指定的配置
         };
 
@@ -209,33 +216,6 @@ export class MouseInteractionScript extends ScriptBase {
     }
 
     /**
-     * 设置对象取消选择事件回调
-     * @param callback 回调函数
-     */
-    public setOnObjectDeselectedCallback(callback: (object: THREE.Object3D | null) => void): void {
-        this.onObjectDeselectedCallbacks = [callback];
-    }
-
-    /**
-     * 添加对象取消选择事件回调
-     * @param callback 回调函数
-     */
-    public addOnObjectDeselectedCallback(callback: (object: THREE.Object3D | null) => void): void {
-        this.onObjectDeselectedCallbacks.push(callback);
-    }
-
-    /**
-     * 移除对象取消选择事件回调
-     * @param callback 回调函数
-     */
-    public removeOnObjectDeselectedCallback(callback: (object: THREE.Object3D | null) => void): void {
-        const index = this.onObjectDeselectedCallbacks.indexOf(callback);
-        if (index > -1) {
-            this.onObjectDeselectedCallbacks.splice(index, 1);
-        }
-    }
-
-    /**
      * 设置对象悬停事件回调
      * @param callback 回调函数
      */
@@ -263,11 +243,44 @@ export class MouseInteractionScript extends ScriptBase {
     }
 
     /**
-     * 设置可交互的层级掩码
-     * @param mask 层级掩码
+     * 设置对象取消选择事件回调
+     * @param callback 回调函数
      */
-    public setLayerMask(mask: number): void {
-        this.config.layerMask = mask;
+    public setOnObjectDeselectedCallback(callback: (object: THREE.Object3D | null) => void): void {
+        this.onObjectDeselectedCallbacks = [callback];
+    }
+
+    /**
+     * 添加对象取消选择事件回调
+     * @param callback 回调函数
+     */
+    public addOnObjectDeselectedCallback(callback: (object: THREE.Object3D | null) => void): void {
+        this.onObjectDeselectedCallbacks.push(callback);
+    }
+
+    /**
+     * 移除对象取消选择事件回调
+     * @param callback 回调函数
+     */
+    public removeOnObjectDeselectedCallback(callback: (object: THREE.Object3D | null) => void): void {
+        const index = this.onObjectDeselectedCallbacks.indexOf(callback);
+        if (index > -1) {
+            this.onObjectDeselectedCallbacks.splice(index, 1);
+        }
+    }
+
+    /**
+     * 更新鼠标交互配置
+     * @param newConfig 新的配置
+     */
+    public updateConfig(newConfig: Partial<MouseInteractionConfig>): void {
+        // 合并新配置到现有配置
+        Object.assign(this.config, newConfig);
+        
+        // 如果射线检测间隔发生变化，更新节流函数
+        if (newConfig.raycastInterval !== undefined) {
+            this.throttledOnMouseMove = this.throttle(this.onMouseMove.bind(this), this.config.raycastInterval);
+        }
     }
 
     /**
@@ -280,14 +293,8 @@ export class MouseInteractionScript extends ScriptBase {
         }
     }
 
-    public addExcludedObjects(objectName: string[]): void {
-        for (const name of objectName) {
-            this.addExcludedObject(name);
-        }
-    }
-
     /**
-     * 移除排除的对象名称
+     * 移除要排除的对象名称
      * @param objectName 对象名称
      */
     public removeExcludedObject(objectName: string): void {
@@ -298,43 +305,104 @@ export class MouseInteractionScript extends ScriptBase {
     }
 
     /**
-     * 设置要排除的对象类型
-     * @param types 对象类型数组
+     * 设置要排除的对象名称列表
+     * @param objectNames 对象名称数组
      */
-    public setExcludedTypes(types: string[]): void {
-        this.config.excludeTypes = [...types];
+    public setExcludedObjects(objectNames: string[]): void {
+        this.config.excludeObjects = [...objectNames];
+    }
+
+    /**
+     * 获取要排除的对象名称列表
+     * @returns 对象名称数组
+     */
+    public getExcludedObjects(): string[] {
+        return [...this.config.excludeObjects];
+    }
+
+    /**
+     * 添加要排除的图层ID
+     * @param layerId 图层ID
+     */
+    public addExcludedLayer(layerId: string): void {
+        if (!this.config.excludeLayerIds.includes(layerId)) {
+            this.config.excludeLayerIds.push(layerId);
+            console.log(`[MouseInteractionScript] 添加排除图层: ${layerId}`);
+        } else {
+            console.log(`[MouseInteractionScript] 图层已存在于排除列表中: ${layerId}`);
+        }
+    }
+
+    /**
+     * 移除要排除的图层ID
+     * @param layerId 图层ID
+     */
+    public removeExcludedLayer(layerId: string): void {
+        const index = this.config.excludeLayerIds.indexOf(layerId);
+        if (index > -1) {
+            this.config.excludeLayerIds.splice(index, 1);
+        }
+    }
+
+    /**
+     * 设置要排除的图层ID列表
+     * @param layerIds 图层ID数组
+     */
+    public setExcludedLayers(layerIds: string[]): void {
+        this.config.excludeLayerIds = [...layerIds];
+    }
+
+    /**
+     * 获取要排除的图层ID列表
+     * @returns 图层ID数组
+     */
+    public getExcludedLayers(): string[] {
+        console.log(`[MouseInteractionScript] 获取排除的图层列表:`, [...this.config.excludeLayerIds]);
+        return [...this.config.excludeLayerIds];
+    }
+
+    /**
+     * 设置是否检查图层可见性
+     * @param check 是否检查
+     */
+    public setCheckLayerVisibility(check: boolean): void {
+        this.config.checkLayerVisibility = check;
     }
 
     /**
      * 检查对象是否可以交互
+     * 使用引擎核心中的图层管理功能
      * @param object 要检查的对象
-     * @returns 是否可以交互
+     * @returns 对象是否可以交互
      */
     private isObjectInteractable(object: THREE.Object3D): boolean {
-        // 检查对象是否存在
-        if (!object) {
-            return false;
-        }
-
-        // 检查对象是否可见
-        if (!object.visible) {
-            return false;
-        }
-
-        // 检查层级掩码
-        if (object.layers && (object.layers.mask & this.config.layerMask) === 0) {
-            return false;
-        }
-
+        // console.log(`[MouseInteractionScript] 检查对象交互性: ${object.name}, type: ${object.type}, layerId: ${object.userData?.layerId}`);
+        
         // 检查对象名称排除列表
         if (this.config.excludeObjects.includes(object.name)) {
+            // console.log(`[MouseInteractionScript] 对象被名称排除: ${object.name}`);
             return false;
         }
 
         // 检查对象类型排除列表
         const objectType = object.type;
         if (this.config.excludeTypes.includes(objectType)) {
+            // console.log(`[MouseInteractionScript] 对象被类型排除: ${objectType}`);
             return false;
+        }
+
+        // 使用引擎核心中的图层管理功能检查图层ID排除列表
+        if (object.userData && object.userData.layerId) {
+            if (this.config.excludeLayerIds.includes(object.userData.layerId)) {
+                // console.log(`[MouseInteractionScript] 对象被图层排除: ${object.name}, layerId: ${object.userData.layerId}`);
+                return false;
+            }
+            
+            // 检查图层可见性（如果启用）
+            if (this.config.checkLayerVisibility && LayerManagerService.isObjectLocked(object)) {
+                // console.log(`[MouseInteractionScript] 对象被锁定: ${object.name}, layerId: ${object.userData?.layerId}`);
+                return false;
+            }
         }
 
         // 检查对象是否为Mesh且具有材质
@@ -354,6 +422,7 @@ export class MouseInteractionScript extends ScriptBase {
             }
         }
 
+        // console.log(`[MouseInteractionScript] 对象可以交互: ${object.name}`);
         return true;
     }
 
@@ -363,15 +432,23 @@ export class MouseInteractionScript extends ScriptBase {
      * @returns 过滤后的对象数组
      */
     private filterInteractableObjects(intersects: THREE.Intersection[]): THREE.Intersection[] {
-        return intersects.filter(intersect => {
+        // console.log(`[MouseInteractionScript] 开始过滤 ${intersects.length} 个交集对象`);
+        const filtered = intersects.filter(intersect => {
             // 检查交集对象是否存在
             if (!intersect.object) {
+                // console.log(`[MouseInteractionScript] 交集对象不存在`);
                 return false;
             }
 
             // 检查对象是否可以交互
             return this.isObjectInteractable(intersect.object);
+            // if (!isInteractable) {
+            //     // console.log(`[MouseInteractionScript] 对象被过滤: ${intersect.object.name}, layerId: ${intersect.object.userData?.layerId}`);
+            // }
+            // return isInteractable;
         });
+        // console.log(`[MouseInteractionScript] 过滤后剩余 ${filtered.length} 个对象`);
+        return filtered;
     }
 
     /**
@@ -466,6 +543,62 @@ export class MouseInteractionScript extends ScriptBase {
     }
 
     /**
+     * 处理鼠标悬停逻辑
+     */
+    private handleMouseHover(): void {
+        // 性能优化：节流悬停检查
+        const now = performance.now();
+        if (now - this.lastHoverCheck < this.config.raycastInterval) {
+            return;
+        }
+        this.lastHoverCheck = now;
+
+        try {
+            // 更新射线投射器
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+
+            // 执行射线检测
+            // console.log(`[MouseInteractionScript] 执行射线检测`);
+            const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+            // console.log(`[MouseInteractionScript] 射线检测找到 ${intersects.length} 个交集对象`);
+
+            // 过滤可交互的对象
+            const interactableIntersects = this.filterInteractableObjects(intersects);
+
+            let newHoveredObject: THREE.Object3D | null = null;
+
+            // 如果有交集对象，选择第一个（最靠近相机的）
+            if (interactableIntersects.length > 0) {
+                newHoveredObject = interactableIntersects[0].object;
+                // console.log(`[MouseInteractionScript] 选择悬停对象: ${newHoveredObject.name}`);
+            } 
+            // else {
+            //     console.log(`[MouseInteractionScript] 没有可交互的对象`);
+            // }
+
+            // 如果悬停对象发生变化
+            if (newHoveredObject !== this.hoveredObject) {
+                // 清除之前的悬停对象
+                if (this.hoveredObject) {
+                    // console.log(`[MouseInteractionScript] 清除之前的悬停对象: ${this.hoveredObject.name}`);
+                    this.onObjectHoveredCallbacks.forEach(callback => callback(null));
+                }
+
+                // 设置新的悬停对象
+                this.hoveredObject = newHoveredObject;
+
+                // 触发悬停事件
+                if (this.hoveredObject) {
+                    // console.log(`[MouseInteractionScript] 触发悬停事件: ${this.hoveredObject.name}`);
+                    this.onObjectHoveredCallbacks.forEach(callback => callback(this.hoveredObject));
+                }
+            }
+        } catch (error) {
+            console.error('[MouseInteractionScript] 处理鼠标悬停时出错:', error);
+        }
+    }
+
+    /**
      * 触摸开始事件处理器
      *
      * 处理触摸事件，实现与鼠标点击相同的功能
@@ -521,271 +654,93 @@ export class MouseInteractionScript extends ScriptBase {
             // 计算鼠标位置
             const canvas = this.webGLRenderer.domElement;
             const rect = canvas.getBoundingClientRect();
+            this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-            // 从对象池获取Vector2对象
-            const mouse = this.vector2Pool.acquire();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            // 更新射线投射器
+            this.raycaster.setFromCamera(this.mouse, this.camera);
 
-            this.raycaster.setFromCamera(mouse, this.camera);
-
-            // 从对象池获取交集数组
-            const intersects = this.intersectionPool.acquire();
-            this.raycaster.intersectObjects(this.scene.children, true, intersects);
+            // 执行射线检测
+            // console.log(`[MouseInteractionScript] 执行点击射线检测`);
+            const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+            // console.log(`[MouseInteractionScript] 点击射线检测找到 ${intersects.length} 个交集对象`);
 
             // 过滤可交互的对象
             const interactableIntersects = this.filterInteractableObjects(intersects);
 
-            if (interactableIntersects.length > 0) {
-                const selectedObject = interactableIntersects[0].object;
+            let clickedObject: THREE.Object3D | null = null;
 
-                // 检查是否是Mesh对象
-                if (selectedObject && (selectedObject as any).isMesh) {
-                    this.selectObject(selectedObject);
+            // 如果有交集对象，选择第一个（最靠近相机的）
+            if (interactableIntersects.length > 0) {
+                clickedObject = interactableIntersects[0].object;
+                // console.log(`[MouseInteractionScript] 点击对象: ${clickedObject.name}`);
+            } 
+            // else {
+            //     console.log(`[MouseInteractionScript] 没有可交互的对象被点击`);
+            // }
+
+            // 处理对象选择逻辑
+            if (clickedObject) {
+                // 检查是否已经选中了该对象
+                const isSelected = this.selectedObjects.includes(clickedObject);
+
+                if (isSelected) {
+                    // 如果已经选中，取消选择
+                    const index = this.selectedObjects.indexOf(clickedObject);
+                    this.selectedObjects.splice(index, 1);
+                    this.onObjectDeselectedCallbacks.forEach(callback => callback(clickedObject));
+                } else {
+                    // 如果未选中，添加到选中列表
+                    this.selectedObjects.push(clickedObject);
+                    this.onObjectSelectedCallbacks.forEach(callback => callback(clickedObject));
                 }
             } else {
-                // 点击空白处，清除选择
-                this.clearSelection();
+                // 点击空白区域，清除所有选择
+                if (this.selectedObjects.length > 0) {
+                    this.selectedObjects.forEach(obj => {
+                        this.onObjectDeselectedCallbacks.forEach(callback => callback(obj));
+                    });
+                    this.selectedObjects = [];
+                }
+                this.onObjectSelectedCallbacks.forEach(callback => callback(null));
             }
-
-            // 释放对象回对象池
-            this.vector2Pool.release(mouse);
-            this.intersectionPool.release(intersects);
         } catch (error) {
             console.error('[MouseInteractionScript] 处理点击事件时出错:', error);
         }
     }
 
     /**
-     * 处理鼠标悬停检测
-     *
-     * 在每帧更新中调用，使用射线投射检测鼠标下方的对象。
-     * 如果检测到新对象，将触发悬停效果；
-     * 如果鼠标移出所有对象，将清除悬停效果。
-     *
-     * 注意：该方法仅在 hover 或 both 模式下在 update() 中被调用
-     */
-    private handleMouseHover(): void {
-        try {
-            // 性能优化：添加节流机制
-            const now = performance.now();
-            if (now - this.lastHoverCheck < this.config.raycastInterval) {
-                return;
-            }
-            this.lastHoverCheck = now;
-
-            // 从对象池获取交集数组
-            const intersects = this.intersectionPool.acquire();
-            this.raycaster.setFromCamera(this.mouse, this.camera);
-            this.raycaster.intersectObjects(this.scene.children, true, intersects);
-
-            // 过滤可交互的对象
-            const interactableIntersects = this.filterInteractableObjects(intersects);
-
-            if (interactableIntersects.length > 0 && (interactableIntersects[0].object as any).isMesh) {
-                const hoveredObject = interactableIntersects[0].object;
-
-                // 如果悬停到新对象
-                if (this.hoveredObject !== hoveredObject) {
-                    this.hoverObject(hoveredObject);
-                }
-            } else {
-                // 鼠标移出所有对象
-                if (this.hoveredObject) {
-                    this.clearHover();
-                }
-            }
-
-            // 释放对象回对象池
-            this.intersectionPool.release(intersects);
-        } catch (error) {
-            console.error('[MouseInteractionScript] 处理鼠标悬停检测时出错:', error);
-        }
-    }
-
-    /**
-     * 悬停对象
-     */
-    private hoverObject(object: THREE.Object3D): void {
-        try {
-            // 清除之前的悬停
-            this.clearHover();
-
-            this.hoveredObject = object;
-
-            // 触发所有对象悬停事件
-            for (const callback of this.onObjectHoveredCallbacks) {
-                callback(object);
-            }
-
-            // 应用悬停延迟
-            if (this.config.hoverDelay > 0) {
-                this.hoverTimeout = window.setTimeout(() => {
-                }, this.config.hoverDelay);
-            }
-        } catch (error) {
-            console.error('[MouseInteractionScript] 处理对象悬停时出错:', error);
-        }
-    }
-
-    /**
-     * 清除悬停
-     */
-    private clearHover(): void {
-        try {
-            if (this.hoverTimeout) {
-                clearTimeout(this.hoverTimeout);
-                this.hoverTimeout = 0;
-            }
-
-            this.hoveredObject = null;
-
-            // 触发所有对象悬停清除事件
-            for (const callback of this.onObjectHoveredCallbacks) {
-                callback(null);
-            }
-        } catch (error) {
-            console.error('[MouseInteractionScript] 清除悬停效果时出错:', error);
-        }
-    }
-
-    /**
-     * 选择对象
-     */
-    protected selectObject(object: THREE.Object3D | null): void {
-        try {
-            // 检查对象是否可以交互
-            if (!object || !this.isObjectInteractable(object)) {
-                return;
-            }
-
-            let deselectedObject: THREE.Object3D | null = null;
-
-            // 如果对象已被选中，则取消选择
-            const index = this.selectedObjects.indexOf(object);
-            if (index > -1) {
-                this.selectedObjects.splice(index, 1);
-                deselectedObject = object;
-            } else {
-                // 添加到选中列表
-                this.selectedObjects.push(object);
-            }
-
-            // 触发对象选择事件（选择或取消选择）
-            for (const callback of this.onObjectSelectedCallbacks) {
-                callback(deselectedObject ? null : object);
-            }
-
-            // 如果是取消选择，触发取消选择事件
-            if (deselectedObject) {
-                for (const callback of this.onObjectDeselectedCallbacks) {
-                    callback(deselectedObject);
-                }
-            }
-        } catch (error) {
-            console.error('[MouseInteractionScript] 处理对象选择时出错:', error);
-        }
-    }
-
-    /**
-     * 清除选择
-     */
-    private clearSelection(): void {
-        try {
-            const deselectedObjects = [...this.selectedObjects];
-            this.selectedObjects = [];
-            
-            // 触发所有对象的取消选择事件
-            for (const deselectedObject of deselectedObjects) {
-                for (const callback of this.onObjectDeselectedCallbacks) {
-                    callback(deselectedObject);
-                }
-            }
-        } catch (error) {
-            console.error('[MouseInteractionScript] 清除选择时出错:', error);
-        }
-    }
-
-    /**
-     * 清除所有交互
+     * 清除所有交互状态
      */
     private clearAllInteractions(): void {
-        try {
-            this.clearHover();
-            this.clearSelection();
-        } catch (error) {
-            console.error('[MouseInteractionScript] 清除所有交互时出错:', error);
+        // 清除悬停状态
+        if (this.hoveredObject) {
+            this.hoveredObject = null;
+            this.onObjectHoveredCallbacks.forEach(callback => callback(null));
+        }
+
+        // 清除选择状态
+        if (this.selectedObjects.length > 0) {
+            this.selectedObjects.forEach(obj => {
+                this.onObjectDeselectedCallbacks.forEach(callback => callback(obj));
+            });
+            this.selectedObjects = [];
         }
     }
 
     /**
-     * 获取当前悬停的对象
-     */
-    public getHoveredObject(): THREE.Object3D | null {
-        return this.hoveredObject;
-    }
-
-    /**
-     * 获取当前选中的对象列表
+     * 获取当前选中的对象
+     * @returns 当前选中的对象数组
      */
     public getSelectedObjects(): THREE.Object3D[] {
         return [...this.selectedObjects];
     }
 
     /**
-     * 设置交互模式
+     * 获取当前悬停的对象
+     * @returns 当前悬停的对象
      */
-    public setInteractionMode(mode: 'hover' | 'click' | 'both'): void {
-        try {
-            this.config.interactionMode = mode;
-
-            // 重新初始化节流函数
-            this.throttledOnMouseMove = this.throttle(this.onMouseMove.bind(this), this.config.raycastInterval);
-
-            // 重新设置事件监听器
-            this.removeEventListeners();
-            this.setupEventListeners();
-        } catch (error) {
-            console.error('[MouseInteractionScript] 设置交互模式时出错:', error);
-        }
-    }
-
-    /**
-     * 启用/禁用交互
-     */
-    public setEnabled(enabled: boolean): void {
-        try {
-            this.config.enabled = enabled;
-
-            if (!enabled) {
-                this.clearAllInteractions();
-            }
-        } catch (error) {
-            console.error('[MouseInteractionScript] 启用/禁用交互时出错:', error);
-        }
-    }
-
-    /**
-     * 获取当前配置
-     */
-    public getConfig(): MouseInteractionConfig {
-        return { ...this.config };
-    }
-
-    /**
-     * 更新配置
-     */
-    public updateConfig(newConfig: Partial<MouseInteractionConfig>): void {
-        try {
-            const oldRaycastInterval = this.config.raycastInterval;
-            this.config = { ...this.config, ...newConfig };
-
-            // 如果射线检测间隔改变，更新节流函数
-            if (newConfig.raycastInterval !== undefined && newConfig.raycastInterval !== oldRaycastInterval) {
-                this.throttledOnMouseMove = this.throttle(this.onMouseMove.bind(this), this.config.raycastInterval);
-            }
-        } catch (error) {
-            console.error('[MouseInteractionScript] 更新配置时出错:', error);
-        }
+    public getHoveredObject(): THREE.Object3D | null {
+        return this.hoveredObject;
     }
 }

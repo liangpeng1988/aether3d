@@ -14,6 +14,8 @@ import {SmartHomeScene} from "./Script/SmartHomeScene";
 import CurtainDeviceScript from "./Script/CurtainDeviceScript";
 import LoadingScreen from './LoadingScreen';
 import {WasherDeviceScript} from "./Script/WasherDeviceScript";
+import {WaterHeaterScript} from "./Script/WaterHeaterScript";
+import {RobotVacuumCleanerScript} from "./Script/RobotVacuumCleanerScript";
 
 interface Scene3DProps {
   /** 场景准备就绪时的回调函数，提供渲染器和环境贴图脚本实例 */
@@ -212,12 +214,12 @@ const Canvas3D = React.forwardRef<Scene3DHandle, Scene3DProps>((props, ref) => {
       hdrPath: '/hdr/0a200fbabae59dc8151768d9cc4c1c96.hdr',
       envPreset: 'hdr',
       enabled: true,
-      envMapIntensity: 1,
+      envMapIntensity: 0.6,
       toneMapping: 'ACESFilmic',
       toneMappingExposure: 1.0,
       backgroundBlurriness: 1,
       backgroundIntensity: 1.0,
-      environmentIntensity: 1.5,
+      environmentIntensity: 0.3,
       showBackground: false
     });
     engine.addScript(environmentMapScriptRef.current as EnvironmentMapScript);
@@ -240,8 +242,7 @@ const Canvas3D = React.forwardRef<Scene3DHandle, Scene3DProps>((props, ref) => {
 
     // 加载多个GLB模型
     if (models && models.length > 0) {
-      loadModels(models).then(() => {
-      });
+      
     } else {
       // 通知模型加载完成
       setTimeout(() => {
@@ -249,13 +250,7 @@ const Canvas3D = React.forwardRef<Scene3DHandle, Scene3DProps>((props, ref) => {
       }, 0);
     }
 
-    // const shicecurrent = new AirDeviceScript(glbLoaderScriptRef.current, {model: '/ao/cezhi.glb',
-    //   name: 'AiruyDevice',
-    //   position: [0,0, 0],
-    //   rotation: [0, Math.PI/2, 0],
-    //   scale: [1,1, 1]});
-    // engine.addScript(shicecurrent);
-
+    // glbLoaderScriptRef.current?.loadModel('/models/chuanglianpo.glb');
     airDeviceRef.current = new AirDeviceScript(glbLoaderScriptRef.current, {model: '/ao/lishikongtiao.glb',
       name: 'Air Device',
       position: [8.4,0, 2],
@@ -285,6 +280,19 @@ const Canvas3D = React.forwardRef<Scene3DHandle, Scene3DProps>((props, ref) => {
       rotation: [0 , 0, 0],
       scale: [0.1, 0.1, 0.1]});
     engine.addScript(washerDeviceScript);
+
+    const waterHeaterScript = new WaterHeaterScript(glbLoaderScriptRef.current, {model: '/ao/reshuiqi.glb',
+      name: 'Water Heater',
+      position: [0, 10,0],
+      rotation: [0 , 0, 0],
+      scale: [1.5, 1.5, 1.5]});
+    engine.addScript(waterHeaterScript);
+    const robotVacuumCleanerScript = new RobotVacuumCleanerScript(glbLoaderScriptRef.current, {model: '/ao/saodijiqiren.glb',
+      name: 'Robot Vacuum Cleaner',
+      position: [10, 10,0],
+      rotation: [0 , 0, 0],
+      scale: [0.8, 0.8, 0.8]});
+    engine.addScript(robotVacuumCleanerScript);
 
     smartHomeSceneRef.current = new SmartHomeScene(glbLoaderScriptRef.current, {model: '/ao/changjing.glb',
       name: 'HomeScript',

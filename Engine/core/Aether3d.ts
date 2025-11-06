@@ -3,47 +3,46 @@ import type { Viewport } from "../interface/Viewport";
 import { ScriptBase } from "./ScriptBase";
 import { PostProcessingEffectComposer } from "./PostProcessingEffectComposer";
 import { EventEmitter } from "../events";
-import {THREE} from "../core/global.ts";
+import {THREE, TWEEN, TweenGroup} from "../core/global.ts";
 import { FrameRateMonitor, DetailedPerformanceProfiler, ObjectPool, BatchDOMUpdater } from "./PerformanceUtils";
 import { PerformanceAnalyzerScript } from "../controllers/PerformanceAnalyzerScript";
 import { FPSDiagnosticTool } from "../controllers/FPSDiagnosticTool";
 import { MouseInteractionScript } from "../controllers/MouseInteractionScript";
+import { MetadataManager } from "./MetadataManager";
+import { ObjectMetadata } from "./ObjectMetadata";
+import { MetaScene } from "./MetaScene";
 
-// 定义 Aether3D 引擎事件映射
-export interface Aether3dEvents {
-    // 渲染事件
-    'render:start': { timestamp: number };
-    'render:stop': { timestamp: number };
-    'render:frame': { deltaTime: number; timestamp: number };
-
-    // 脚本事件
-    'script:added': { script: IScript };
-    'script:removed': { script: IScript };
-
-    // 场景事件
-    'scene:resize': { width: number; height: number };
-
-    // 后处理事件
-    'postprocessing:enabled': Record<string, never>; // 空对象的正确类型
-    'postprocessing:disabled': Record<string, never>; // 空对象的正确类型
-
-    // 性能事件
-    'performance:fps': { fps: number };
-    'performance:drop': { currentFps: number; previousFps: number };
-
-    // 鼠标交互事件
-    'mouse:objectSelected': { object: THREE.Object3D | null };
-    'mouse:objectHovered': { object: THREE.Object3D | null };
-    'mouse:objectDeselected': { object: THREE.Object3D | null };
-}
+// 导入Aether3dEvents接口
+import type { Aether3dEvents } from "../events/Aether3dEvents";
 
 export class Aether3d extends EventEmitter<Aether3dEvents> {
     private canvas: HTMLCanvasElement;
     private config: Viewport;
 
     public renderer: THREE.WebGLRenderer;
-    public scene: THREE.Scene;
+    private _scene: MetaScene;
     public camera: THREE.PerspectiveCamera;
+
+    /**
+     * 场景属性的getter
+     */
+    public get scene(): MetaScene {
+        return this._scene;
+    }
+
+    /**
+     * 场景属性的setter，确保在设置新场景时正确处理元数据
+     */
+    public set scene(value: MetaScene) {
+        this._scene = value;
+        // 如果新场景有元数据管理功能，确保元数据管理器能正确处理
+        // 这里可以添加额外的逻辑来处理场景切换时的元数据迁移等操作
+    }
+
+    /**
+     * 元数据管理器实例
+     */
+    private metadataManager: MetadataManager = new MetadataManager();
 
     /**
      * 鼠标交互脚本实例
@@ -154,8 +153,8 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.0;
-        this.scene = new THREE.Scene();
-        this.scene.background = config.backgroundColor ? new THREE.Color(config.backgroundColor) : null;
+        this._scene = new MetaScene(this.metadataManager);
+        this._scene.background = config.backgroundColor ? new THREE.Color(config.backgroundColor) : null;
         this.camera = new THREE.PerspectiveCamera(
             75,
             this.config.aspect,
@@ -267,10 +266,19 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
 
     /**
      * 更新渲染器大小
+     * @private
      */
     private updateRendererSize(): void {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+        // 使用容器的实际尺寸而不是窗口尺寸
+        const container = this.renderer.domElement.parentElement;
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        
+        // 如果有容器，使用容器的实际尺寸
+        if (container) {
+            width = container.clientWidth;
+            height = container.clientHeight;
+        }
 
         // 性能优化：只有在尺寸真正改变时才更新
         if (this.lastWidth === width && this.lastHeight === height) {
@@ -317,8 +325,8 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
     private handleWindowResize(): void {
         this.updateRendererSize();
         this.emit('scene:resize', {
-            width: window.innerWidth,
-            height: window.innerHeight
+            width: this.lastWidth,
+            height: this.lastHeight
         });
     }
 
@@ -393,6 +401,14 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
 
         // 性能分析：开始帧渲染分析
         this.performanceProfiler.start('frameRender');
+
+        // 统一的TWEEN动画更新 - 解决性能问题（使用新API）
+        this.performanceProfiler.start('tweenUpdate');
+        TweenGroup.update(time);
+        this.performanceProfiler.end('tweenUpdate');
+
+        // 更新帧率监控（使用主渲染循环的时间戳）
+        this.frameRateMonitor.updateFromMainLoop(time);
 
         this.fixedUpdate(1/60);
 
@@ -551,16 +567,17 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
         updateFn: (object: T, deltaTime: number) => void,
         deltaTime: number
     ): void {
-        // 分批处理对象更新，避免阻塞主线程
+        // 直接同步批处理，避免嵌套requestAnimationFrame
         for (let i = 0; i < objects.length; i += this.renderBatchSize) {
             const batch = objects.slice(i, Math.min(i + this.renderBatchSize, objects.length));
-
-            // 使用requestAnimationFrame确保在下一帧执行
-            requestAnimationFrame(() => {
-                for (const object of batch) {
+            
+            for (const object of batch) {
+                try {
                     updateFn(object, deltaTime);
+                } catch (error) {
+                    console.error('[Aether3d] 对象更新失败:', error);
                 }
-            });
+            }
         }
     }
 
@@ -676,7 +693,11 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
      * 重新调整大小
      */
     public resize(): void {
-        this.handleWindowResize();
+        this.updateRendererSize();
+        this.emit('scene:resize', {
+            width: this.lastWidth,
+            height: this.lastHeight
+        });
     }
 
     /**
@@ -866,6 +887,87 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
     }
 
     /**
+     * 获取元数据管理器实例
+     * @returns 元数据管理器实例
+     */
+    public getMetadataManager(): MetadataManager {
+        return this.metadataManager;
+    }
+
+    /**
+     * 为对象创建元数据
+     * @param object 3D对象
+     * @param name 对象名称
+     * @param type 对象类型
+     * @returns 元数据对象
+     */
+    public createObjectMetadata(object: THREE.Object3D, name: string, type: string): ObjectMetadata {
+        return this.metadataManager.createObjectMetadata(object, name, type);
+    }
+
+    /**
+     * 为图层创建元数据
+     * @param layerId 图层ID
+     * @param name 图层名称
+     * @returns 元数据对象
+     */
+    public createLayerMetadata(layerId: string, name: string): ObjectMetadata {
+        return this.metadataManager.createLayerMetadata(layerId, name);
+    }
+
+    /**
+     * 获取对象的元数据
+     * @param object 3D对象
+     * @returns 元数据对象，如果不存在则返回undefined
+     */
+    public getObjectMetadata(object: THREE.Object3D): ObjectMetadata | undefined {
+        return this.metadataManager.getObjectMetadata(object);
+    }
+
+    /**
+     * 获取图层的元数据
+     * @param layerId 图层ID
+     * @returns 元数据对象，如果不存在则返回undefined
+     */
+    public getLayerMetadata(layerId: string): ObjectMetadata | undefined {
+        return this.metadataManager.getLayerMetadata(layerId);
+    }
+
+    /**
+     * 更新对象元数据
+     * @param object 3D对象
+     * @param updates 更新内容
+     */
+    public updateObjectMetadata(object: THREE.Object3D, updates: Partial<ObjectMetadata>): void {
+        this.metadataManager.updateObjectMetadata(object, updates);
+    }
+
+    /**
+     * 更新图层元数据
+     * @param layerId 图层ID
+     * @param updates 更新内容
+     */
+    public updateLayerMetadata(layerId: string, updates: Partial<ObjectMetadata>): void {
+        this.metadataManager.updateLayerMetadata(layerId, updates);
+    }
+
+    /**
+     * 删除对象元数据
+     * @param object 3D对象
+     */
+    public removeObjectMetadata(object: THREE.Object3D): void {
+        this.metadataManager.removeObjectMetadata(object);
+    }
+
+    /**
+     * 删除图层元数据
+     * @param layerId 图层ID
+     */
+    public removeLayerMetadata(layerId: string): void {
+        this.metadataManager.removeLayerMetadata(layerId);
+    }
+
+    /**
      * 运行FPS诊断
      */
     public runFPSDiagnostics(): any {
@@ -895,6 +997,11 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
                 // 触发引擎级别的鼠标选择事件
                 this.emit('mouse:objectSelected', { object });
                 
+                // 输出对象元数据信息
+                if (object) {
+                  this.outputObjectMetadata(object);
+                }
+                
                 // 调用外部设置的回调函数（如果有的话）
                 if (this.onObjectSelectedCallback) {
                     this.onObjectSelectedCallback(object);
@@ -922,6 +1029,49 @@ export class Aether3d extends EventEmitter<Aether3dEvents> {
                     this.onObjectHoveredCallback(object);
                 }
             });
+
+            // 添加要排除的图层（系统图层）
+            this.mouseInteractionScript?.addExcludedLayer('layer0');
+            console.log('[Aether3d] 已添加图层0到排除列表');
+            // 检查排除的图层列表
+            const excludedLayers = this.mouseInteractionScript?.getExcludedLayers();
+            console.log('[Aether3d] 当前排除的图层:', excludedLayers);
+        }
+    }
+    
+    /**
+     * 输出对象元数据信息
+     * @param object 3D对象
+     */
+    private outputObjectMetadata(object: THREE.Object3D): void {
+        try {
+            // 获取对象的元数据
+            const metadata = this._scene.getMetadataManager().getObjectMetadata(object);
+            
+            if (metadata) {
+                // 输出元数据信息到控制台
+                console.log('[Aether3d] 选中对象元数据:', {
+                  id: metadata.id,
+                  name: metadata.name,
+                  type: metadata.type,
+                  tags: metadata.tags,
+                  layerId: metadata.layerId,
+                  locked: metadata.locked,
+                  visible: metadata.visible,
+                  createdAt: metadata.createdAt,
+                  updatedAt: metadata.updatedAt,
+                  version: metadata.version
+                });
+            } else {
+                // 如果没有找到元数据，输出基本信息
+                console.log('[Aether3d] 选中对象（无元数据）:', {
+                  name: object.name,
+                  type: object.type,
+                  id: object.userData?.id
+                });
+            }
+        } catch (error) {
+            console.error('[Aether3d] 输出对象元数据时出错:', error);
         }
     }
 }

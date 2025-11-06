@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js 精准对齐系统演示</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 100;
+            min-width: 250px;
+        }
+        
+        #controls h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .control-group button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .control-group button:hover {
+            background: #45a049;
+        }
+        
+        .control-group button:last-child {
+            margin-bottom: 0;
+        }
+        
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 100;
+        }
+        
+        #fps-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container"></div>
+        
+        <div id="controls">
+            <h2>对齐系统控制面板</h2>
+            
+            <div class="control-group">
+                <label>对齐操作:</label>
+                <button id="align-center">对齐到中心</button>
+                <button id="align-min">对齐到最小点</button>
+                <button id="align-max">对齐到最大点</button>
+            </div>
+            
+            <div class="control-group">
+                <label>分布操作:</label>
+                <button id="distribute-x">X轴分布</button>
+                <button id="distribute-y">Y轴分布</button>
+                <button id="distribute-z">Z轴分布</button>
+            </div>
+            
+            <div class="control-group">
+                <label>相对对齐:</label>
+                <button id="align-relative">相对对齐</button>
+            </div>
+            
+            <div class="control-group">
+                <label>其他操作:</label>
+                <button id="undo">撤销操作</button>
+                <button id="reset">重置场景</button>
+            </div>
+        </div>
+        
+        <div id="fps-counter">FPS: 0</div>
+        
+        <div id="info">
+            <div>当前模式: <span id="mode-info">中心对齐</span></div>
+            <div>坐标系统: <span id="coord-info">世界坐标</span></div>
+            <div>对象数量: <span id="object-count">0</span></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Aether3d } from '../../index.js';
+        import { Viewport } from '../interface/Viewport.js';
+        import { THREE } from "../core/global.js";
+        import { OrbitControlsScript } from '../controllers/OrbitControlsScript.js';
+        import { AlignmentController } from './index.js';
+        
+        // 初始化场景
+        let renderer, scene, camera;
+        let orbitControls, alignmentController;
+        let testObjects = [];
+        let fps = 0;
+        
+        // DOM 元素
+        const canvasContainer = document.getElementById('canvas-container');
+        const fpsCounter = document.getElementById('fps-counter');
+        const modeInfo = document.getElementById('mode-info');
+        const coordInfo = document.getElementById('coord-info');
+        const objectCount = document.getElementById('object-count');
+        
+        // 初始化渲染器
+        function initRenderer() {
+            const viewportConfig = {
+                element: canvasContainer,
+                dpr: new THREE.Vector2(window.innerWidth, window.innerHeight),
+                antialias: true,
+                factor: 1,
+                distance: 5,
+                alpha: false,
+                aspect: window.innerWidth / window.innerHeight,
+                enablePostProcessing: false,
+                enableLogarithmicDepthBuffer: false,
+                enablePerformanceMonitoring: true,
+                backgroundColor: '#222222'
+            };
+            
+            renderer = new Aether3d(viewportConfig);
+            scene = renderer.scene;
+            camera = renderer.camera;
+            
+            // 设置相机位置
+            camera.position.set(5, 5, 5);
+            camera.lookAt(0, 0, 0);
+            
+            // 添加轨道控制器
+            orbitControls = new OrbitControlsScript({
+                enableDamping: true,
+                dampingFactor: 0.05,
+                rotateSpeed: 0.5,
+                zoomSpeed: 1.2,
+                maxPolarAngle: THREE.MathUtils.degToRad(89),
+                minDistance: 1,
+                maxDistance: 20,
+                enableRotate: true,
+                enableZoom: true,
+                enablePan: true
+            });
+            renderer.addScript(orbitControls);
+            
+            // 添加对齐控制器
+            alignmentController = new AlignmentController(scene, camera, renderer);
+            renderer.addScript(alignmentController);
+            
+            // 监听FPS
+            renderer.on('performance:fps', (data) => {
+                fps = data.fps;
+                fpsCounter.textContent = `FPS: ${Math.round(fps)}`;
+            });
+            
+            // 启动渲染循环
+            renderer.start();
+            
+            // 窗口大小调整
+            window.addEventListener('resize', handleResize);
+        }
+        
+        // 处理窗口大小调整
+        function handleResize() {
+            renderer.resize();
+        }
+        
+        // 创建测试对象
+        function createTestObjects() {
+            // 清除现有的测试对象
+            testObjects.forEach(obj => {
+                scene.remove(obj);
+            });
+            testObjects = [];
+            
+            // 创建几个不同颜色的立方体用于测试
+            const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
+            
+            for (let i = 0; i < 6; i++) {
+                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: colors[i],
+                    wireframe: false
+                });
+                const cube = new THREE.Mesh(geometry, material);
+                
+                // 设置随机初始位置
+                cube.position.set(
+                    (Math.random() - 0.5) * 5,
+                    (Math.random() - 0.5) * 5,
+                    (Math.random() - 0.5) * 5
+                );
+                
+                scene.add(cube);
+                testObjects.push(cube);
+            }
+            
+            // 更新对象计数
+            objectCount.textContent = testObjects.length;
+            
+            console.log(`已创建 ${testObjects.length} 个测试对象`);
+        }
+        
+        // 对齐到中心点
+        function alignToCenter() {
+            const center = new THREE.Vector3(0, 0, 0);
+            alignmentController.alignSelectedObjects(testObjects, center, 'center');
+            modeInfo.textContent = '中心对齐';
+        }
+        
+        // 对齐到最小点
+        function alignToMin() {
+            const minPoint = new THREE.Vector3(-3, -3, -3);
+            alignmentController.alignSelectedObjects(testObjects, minPoint, 'min');
+            modeInfo.textContent = '最小点对齐';
+        }
+        
+        // 对齐到最大点
+        function alignToMax() {
+            const maxPoint = new THREE.Vector3(3, 3, 3);
+            alignmentController.alignSelectedObjects(testObjects, maxPoint, 'max');
+            modeInfo.textContent = '最大点对齐';
+        }
+        
+        // X轴分布
+        function distributeX() {
+            alignmentController.distributeSelectedObjects(testObjects, 'x', 1);
+            modeInfo.textContent = 'X轴分布';
+        }
+        
+        // Y轴分布
+        function distributeY() {
+            alignmentController.distributeSelectedObjects(testObjects, 'y', 1);
+            modeInfo.textContent = 'Y轴分布';
+        }
+        
+        // Z轴分布
+        function distributeZ() {
+            alignmentController.distributeSelectedObjects(testObjects, 'z', 1);
+            modeInfo.textContent = 'Z轴分布';
+        }
+        
+        // 相对对齐
+        function alignRelative() {
+            if (testObjects.length >= 2) {
+                alignmentController.alignToTarget([testObjects[0]], testObjects[1], 'center');
+                modeInfo.textContent = '相对对齐';
+            }
+        }
+        
+        // 撤销操作
+        function undoAlignment() {
+            const success = alignmentController.undoLastAlignment();
+            if (success) {
+                console.log('已撤销上一次对齐操作');
+            } else {
+                console.log('没有可撤销的操作');
+            }
+        }
+        
+        // 重置场景
+        function resetScene() {
+            createTestObjects();
+            modeInfo.textContent = '场景已重置';
+        }
+        
+        // 绑定事件监听器
+        function bindEvents() {
+            document.getElementById('align-center').addEventListener('click', alignToCenter);
+            document.getElementById('align-min').addEventListener('click', alignToMin);
+            document.getElementById('align-max').addEventListener('click', alignToMax);
+            document.getElementById('distribute-x').addEventListener('click', distributeX);
+            document.getElementById('distribute-y').addEventListener('click', distributeY);
+            document.getElementById('distribute-z').addEventListener('click', distributeZ);
+            document.getElementById('align-relative').addEventListener('click', alignRelative);
+            document.getElementById('undo').addEventListener('click', undoAlignment);
+            document.getElementById('reset').addEventListener('click', resetScene);
+        }
+        
+        // 初始化应用
+        function init() {
+            initRenderer();
+            createTestObjects();
+            bindEvents();
+            
+            console.log('对齐系统演示已启动');
+        }
+        
+        // 启动应用
+        init();
+        
+        // 页面卸载时清理资源
+        window.addEventListener('beforeunload', () => {
+            if (renderer) {
+                renderer.stop();
+                renderer.dispose();
+            }
+        });
+    </script>
+</body>
+</html>

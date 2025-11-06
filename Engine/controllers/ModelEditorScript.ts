@@ -80,6 +80,14 @@ export class ModelEditorScript extends ScriptBase {
             showAxes: true,
             enableGridSnap: true,
             gridSize: 1,
+            snapConfig: {
+                enabled: true,
+                gridDistance: 1.0,
+                vertexDistance: 0.5,
+                edgeDistance: 0.5,
+                centerDistance: 0.5,
+                enabledTypes: [SnapType.GRID, SnapType.VERTEX, SnapType.CENTER]
+            },
             ...options
         };
 
@@ -247,18 +255,12 @@ export class ModelEditorScript extends ScriptBase {
     }
 
     /**
-     * 键盘按下事件处理
+     * 键盘事件处理
      */
     private onKeyDown(event: KeyboardEvent): void {
         // 按下Delete键删除选中对象
-        if (event.key === 'Delete' && this.selectedObject) {
+        if (event.key === 'Delete') {
             this.deleteSelectedObject();
-            return;
-        }
-
-        // 按下Esc键取消选择
-        if (event.key === 'Escape') {
-            this.deselectObject();
             return;
         }
 
@@ -375,7 +377,21 @@ export class ModelEditorScript extends ScriptBase {
                 this.selectedObject.position.y += Math.round(delta.y / this.config.gridSize) * this.config.gridSize;
                 this.selectedObject.position.z += Math.round(delta.z / this.config.gridSize) * this.config.gridSize;
             } else {
-                this.selectedObject.position.add(delta);
+                // 使用新的吸附工具进行吸附
+                const sceneObjects = this.scene.children.filter(obj => 
+                    obj !== this.selectedObject && 
+                    obj !== this.axesHelper && 
+                    obj !== this.selectionBox
+                );
+                
+                const newPosition = this.selectedObject.position.clone().add(delta);
+                const snappedPosition = SnapUtils.applySnap(
+                    newPosition, 
+                    sceneObjects, 
+                    this.config.snapConfig as SnapConfig
+                );
+                
+                this.selectedObject.position.copy(snappedPosition);
             }
 
             // 更新选择框
@@ -472,6 +488,11 @@ export class ModelEditorScript extends ScriptBase {
                 this.removeObject(this.axesHelper);
                 this.axesHelper = null;
             }
+        }
+        
+        // 如果吸附配置改变，更新吸附配置
+        if (newConfig.snapConfig) {
+            Object.assign(this.config.snapConfig, newConfig.snapConfig);
         }
     }
 

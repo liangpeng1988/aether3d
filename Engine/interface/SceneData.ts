@@ -1,5 +1,6 @@
 import {THREE} from "../core/global.ts";
 import type {IScript} from "./IScript.ts";
+import type {ObjectMetadata} from "../core/ObjectMetadata.ts";
 
 /**
  * 场景数据接口
@@ -23,4 +24,10 @@ export interface SceneData {
 
     /** 已启动的脚本集合，用于跟踪哪些脚本已经被执行过 start 方法 */
     startedScripts: Set<IScript>;
+    
+    /** 对象元数据映射，将对象ID与元数据进行映射 */
+    objectMetadata: Map<string, ObjectMetadata>;
+    
+    /** 图层元数据映射，将图层ID与元数据进行映射 */
+    layerMetadata: Map<string, ObjectMetadata>;
 }

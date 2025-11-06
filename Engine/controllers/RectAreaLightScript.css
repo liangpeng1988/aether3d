@@ -1,0 +1,194 @@
+/* RectAreaLightScript 样式文件 */
+
+/* 基础标签样式 */
+.rect-area-light-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    border-radius: 10px;
+    font-size: 12px;
+    font-family: Arial, "Microsoft YaHei", sans-serif;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.1),
+        inset 0 0 10px rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 1000;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.1s ease;
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* 不可点击状态 */
+.rect-area-light-label.non-clickable {
+    cursor: default;
+    pointer-events: none;
+}
+
+/* 图标样式 */
+.rect-area-light-icon {
+    margin-right: 6px;
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    transition: all 0.25s ease-in-out;
+    opacity: 1;
+}
+
+/* 文本样式 */
+.rect-area-light-text {
+    /* 文本样式主要通过父元素继承 */
+}
+
+/* 开灯状态样式 */
+.rect-area-light-label.light-on {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        inset 0 0 16px rgba(255, 255, 255, 0.15),
+        0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* 关灯状态样式 */
+.rect-area-light-label.light-off {
+    background: rgba(100, 100, 100, 0.08);
+    border: 1px solid rgba(150, 150, 150, 0.12);
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.08),
+        inset 0 0 8px rgba(150, 150, 150, 0.08);
+}
+
+/* 关灯状态图标样式 */
+.rect-area-light-icon.light-off {
+    opacity: 0.6;
+}
+
+/* LiquidGlass效果的before伪元素 */
+.rect-area-light-label::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.01));
+    border-radius: 10px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* LiquidGlass效果的after伪元素 */
+.rect-area-light-label::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    border-radius: 10px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* 外部标签默认样式类 */
+.external-rect-area-light-label {
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+.external-rect-area-light-label.clickable {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.external-rect-area-light-label.non-clickable {
+    pointer-events: none;
+    cursor: default;
+}
+
+/* 渐显/渐隐动画 */
+.rect-area-light-label.fade-in {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.rect-area-light-label.fade-out {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* 响应式设计 - 小屏幕适配 */
+@media (max-width: 768px) {
+    .rect-area-light-label {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    .rect-area-light-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .rect-area-light-label {
+        border: 2px solid #ffffff;
+        background: rgba(0, 0, 0, 0.8);
+    }
+    
+    .rect-area-light-label.light-on {
+        background: rgba(255, 255, 255, 0.9);
+        color: #000000;
+    }
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+    .rect-area-light-label,
+    .rect-area-light-icon {
+        transition: none;
+    }
+}
+
+/* 主题变量 - 可自定义 */
+.rect-area-light-label.theme-blue {
+    --primary-color: rgba(0, 123, 255, 0.8);
+    --primary-border: rgba(0, 123, 255, 0.4);
+    background: var(--primary-color);
+    border-color: var(--primary-border);
+}
+
+.rect-area-light-label.theme-green {
+    --primary-color: rgba(40, 167, 69, 0.8);
+    --primary-border: rgba(40, 167, 69, 0.4);
+    background: var(--primary-color);
+    border-color: var(--primary-border);
+}
+
+.rect-area-light-label.theme-red {
+    --primary-color: rgba(220, 53, 69, 0.8);
+    --primary-border: rgba(220, 53, 69, 0.4);
+    background: var(--primary-color);
+    border-color: var(--primary-border);
+}
+
+/* 自定义主题类 */
+.rect-area-light-label.custom-theme {
+    background: var(--custom-bg, rgba(255, 255, 255, 0.05));
+    border-color: var(--custom-border, rgba(255, 255, 255, 0.1));
+    color: var(--custom-text, #ffffff);
+}

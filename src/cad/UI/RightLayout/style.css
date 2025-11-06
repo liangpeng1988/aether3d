@@ -1,0 +1,94 @@
+/* 右侧属性栏容器 */
+.right-sidebar {
+  width: 360px;
+  background-color: #2a2a2a;
+  display: flex;
+  flex-direction: row; /* 水平排列，按钮在左，内容在右 */
+  transition: width 0.3s ease; /* 收缩/展开动画 */
+  flex-shrink: 0; /* 防止被压缩 */
+  order: 3; /* 确保在最右侧 */
+  height: 100%; /* 确保占满整个高度 */
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3); /* 添加阴影效果 */
+  position: relative; /* 确保定位上下文 */
+  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* 右侧属性栏展开状态 */
+.right-sidebar:not(.collapsed) {
+  width: 360px;
+}
+
+/* 右侧属性栏收缩状态 */
+.right-sidebar.collapsed {
+  width: 10px; /* 修改为10px以容纳拖动边缘 */
+}
+
+/* 拖动边缘 */
+.resize-handle {
+  width: 10px;
+  background-color: #3a3a3a;
+  cursor: col-resize;
+  border-left: 1px solid #444;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.resize-handle:hover {
+  background-color: #4a4a4a;
+}
+
+.resize-handle:active {
+  background-color: #5a5a5a;
+}
+
+/* 属性面板容器 - 右侧Tab内容的容器 */
+.properties-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%; /* 确保填满容器 */
+  background-color: #2a2a2a; /* 确保背景色一致 */
+  width: calc(100% - 10px); /* 修改为减去拖动边缘的宽度 */
+  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* 右侧Tabs容器 */
+.right-tabs-container {
+  display: flex;
+  background-color: #333;
+  border-bottom: 1px solid #444;
+  flex-shrink: 0; /* 防止被压缩 */
+}
+
+/* 右侧Tab项 */
+.right-tab {
+  flex: 1;
+  padding: 12px 0;
+  text-align: center;
+  cursor: pointer;
+  color: #aaa;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+/* 激活的Tab项 */
+.right-tab.active {
+  color: #4CAF50;
+  border-bottom: 2px solid #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+/* Tab项悬停效果 */
+.right-tab:hover:not(.active) {
+  background-color: #3a3a3a;
+  color: #ddd;
+}
+
+/* 右侧Tab内容区域 */
+.right-tab-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  background-color: #333;
+}

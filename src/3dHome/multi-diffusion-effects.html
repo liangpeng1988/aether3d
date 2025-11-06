@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扇形雷达扫描</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #0c1234 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: Arial, sans-serif; color: white; overflow: hidden; 
+        }
+        .main-container { display: flex; height: 100vh; width: 100vw; }
+        
+        /* 左侧3D画布 - 用户偏好：图片在左 */
+        .canvas-section { flex: 1; position: relative; background: #000; }
+        #container { width: 100%; height: 100%; }
+        
+        /* 右侧控制面板 - 用户偏好：文字在右，控件居中对齐 */
+        .control-section {
+            width: 300px; background: rgba(0, 0, 0, 0.9); padding: 20px;
+            overflow-y: auto; display: flex; flex-direction: column; align-items: center;
+        }
+        .title { text-align: center; margin-bottom: 20px; color: #4fc3f7; }
+        .control-group {
+            width: 100%; margin-bottom: 15px; padding: 12px;
+            background: rgba(255, 255, 255, 0.05); border-radius: 8px;
+        }
+        .control-group h3 { margin: 0 0 10px 0; font-size: 14px; color: #ffab40; text-align: center; }
+        .control-item { margin-bottom: 8px; }
+        .control-item label { display: block; margin-bottom: 4px; font-size: 11px; color: #e0e0e0; text-align: center; }
+        
+        /* 原生input range滚动条 - 用户偏好 */
+        input[type="range"] {
+            width: 100%; height: 4px; -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2); border-radius: 2px; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 12px; height: 12px;
+            background: #4fc3f7; border-radius: 50%; cursor: pointer;
+        }
+        
+        button {
+            width: 100%; padding: 8px; background: linear-gradient(45deg, #4fc3f7, #29b6f6);
+            color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;
+        }
+        button:hover { background: linear-gradient(45deg, #29b6f6, #0277bd); }
+        button.active { background: linear-gradient(45deg, #ff5722, #f44336); }
+        
+        .value-display { text-align: center; font-size: 9px; color: #4fc3f7; margin-top: 2px; }
+        
+        .top-info {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            z-index: 100; background: rgba(0, 0, 0, 0.8); padding: 8px 16px; border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="canvas-section">
+            <div id="container"></div>
+            <div class="top-info">
+                <h2 style="margin:0;font-size:14px;color:#4fc3f7;">扇形雷达扫描</h2>
+                <p style="margin:0;font-size:10px;color:#81c784;" id="statusInfo">雷达扫描系统 • 实时参数控制 • 鼠标拖拽旋转相机</p>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="title">
+                <h1 style="font-size:18px;">雷达控制台</h1>
+                <p style="font-size:11px;color:#81c784;">扇形雷达扫描参数调节</p>
+            </div>
+
+            <div class="control-group">
+                <h3>⏯️ 动画控制</h3>
+                <div class="control-item"><button id="toggleAnimation">开始扫描</button></div>
+                <div class="control-item"><button id="resetTime">重置时间</button></div>
+            </div>
+
+            <div class="control-group">
+                <h3>🎛️ 雷达参数</h3>
+                <div class="control-item">
+                    <label for="speedSlider">扫描速度</label>
+                    <input type="range" id="speedSlider" min="0.1" max="5.0" step="0.1" value="1.5">
+                    <div class="value-display" id="speedValue">1.5</div>
+                </div>
+                <div class="control-item">
+                    <label for="radiusSlider">探测半径</label>
+                    <input type="range" id="radiusSlider" min="20" max="100" step="5" value="50">
+                    <div class="value-display" id="radiusValue">50</div>
+                </div>
+                <div class="control-item">
+                    <label for="angleSlider">扇形角度</label>
+                    <input type="range" id="angleSlider" min="0.5" max="6.28" step="0.1" value="1.57">
+                    <div class="value-display" id="angleValue">90°</div>
+                </div>
+                <div class="control-item">
+                    <label for="opacitySlider">透明度</label>
+                    <input type="range" id="opacitySlider" min="0.1" max="1.0" step="0.1" value="0.8">
+                    <div class="value-display" id="opacityValue">80%</div>
+                </div>
+                <div class="control-item">
+                    <label for="colorPicker">雷达颜色</label>
+                    <input type="color" id="colorPicker" value="#00ff00" style="width:100%;height:30px;">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>🎮 相机控制</h3>
+                <div class="control-item"><button id="resetCamera">重置相机</button></div>
+                <div class="control-item"><button id="topView">俯视图</button></div>
+                <div class="control-item"><button id="frontView">正视图</button></div>
+            </div>
+
+            <div class="control-group">
+                <h3>🏗️ 模型加载</h3>
+                <div class="control-item"><button id="loadModel">加载FBX模型</button></div>
+                <div class="control-item"><button id="applyRadarToModel">应用雷达效果</button></div>
+                <div class="control-item"><button id="removeModel">移除模型</button></div>
+            </div>
+
+            <div class="control-group">
+                <h3>🚀 预设效果</h3>
+                <div class="control-item"><button onclick="setPreset('fast')">快速扫描</button></div>
+                <div class="control-item"><button onclick="setPreset('wide')">广域探测</button></div>
+                <div class="control-item"><button onclick="setPreset('precise')">精确定位</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Aether3d, BeforeMaterial, RadarMaterial, OrbitControlsScript, THREE } from '../../Engine';
+        import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+        
+        // 使用Aether3d引擎的扇形雷达变量
+        let engine = null;
+        let time = { value: 0 };
+        let isAnimating = false;
+        let radarMesh = null;
+        let radarMaterial = null;
+        let loadedModel = null; // FBX模型
+        let originalMaterials = new Map(); // 保存原始材质
+        let orbitControlsScript = null;
+
+        let currentParams = {
+            speed: 1.5,
+            radius: 50,
+            angle: Math.PI / 2, // 90度
+            opacity: 0.8,
+            color: "#00ff00"
+        };
+
+        init();
+        animate();
+        
+        // 自动启动雷达扫描
+        setTimeout(() => {
+            if (!isAnimating) {
+                toggleAnimation();
+            }
+        }, 500);
+
+        function init() {
+            const container = document.getElementById('container');
+            
+            // 创建或获取canvas元素
+            let canvas = container.querySelector('canvas');
+            if (!canvas) {
+                canvas = document.createElement('canvas');
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.display = 'block';
+                container.appendChild(canvas);
+            }
+            
+            // 初始化Aether3d引擎
+            engine = new Aether3d({
+                element: canvas,
+                dpr: new THREE.Vector2(container.clientWidth, container.clientHeight),
+                alpha: false,
+                antialias: true,
+                factor: window.devicePixelRatio,
+                distance: 5,
+                aspect: container.clientWidth / container.clientHeight,
+                enablePostProcessing: false,
+                enablePerformanceMonitoring: true,
+                backgroundColor: '#0a0a0a'
+            });
+            
+            // 设置相机位置 - 俯视角度
+            engine.camera.position.set(0, 80, 0);
+            engine.camera.lookAt(0, 0, 0);
+            
+            // 使用引擎的相机控制系统
+            orbitControlsScript = new OrbitControlsScript({
+                enableDamping: true,
+                dampingFactor: 0.05,
+                minDistance: 30,
+                maxDistance: 200,
+                maxPolarAngle: Math.PI
+            });
+            engine.addScript(orbitControlsScript);
+            
+            // 添加环境光
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+            engine.scene.add(ambientLight);
+            
+            // 添加参考网格
+            const gridHelper = new THREE.GridHelper(120, 20, 0x333333, 0x333333);
+            engine.scene.add(gridHelper);
+            
+            // 添加调试用的线框立方体确保渲染正常
+            const debugGeometry = new THREE.BoxGeometry(5, 5, 5);
+            const debugMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x00ff00, 
+                wireframe: true 
+            });
+            const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
+            debugCube.position.set(0, 2.5, 0);
+            engine.scene.add(debugCube);
+
+            // 添加一些参考对象
+            addReferenceObjects();
+
+            window.addEventListener('resize', onWindowResize, false);
+            initControls();
+            createRadar();
+            
+            // 启动引擎渲染和更新循环
+            engine.start();
+            startEngineUpdateLoop();
+        }
+
+        function addReferenceObjects() {
+            // 添加一些立方体作为雷达探测目标
+            for (let i = 0; i < 10; i++) {
+                const geometry = new THREE.BoxGeometry(2, 2, 2);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: 0x666666, 
+                    wireframe: true 
+                });
+                const cube = new THREE.Mesh(geometry, material);
+                
+                cube.position.set(
+                    (Math.random() - 0.5) * 80,
+                    1,
+                    (Math.random() - 0.5) * 80
+                );
+                
+                engine.scene.add(cube);
+            }
+
+            // 添加中心标记
+            const centerGeometry = new THREE.CylinderGeometry(1, 1, 3, 8);
+            const centerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const centerMarker = new THREE.Mesh(centerGeometry, centerMaterial);
+            centerMarker.position.y = 1.5;
+            engine.scene.add(centerMarker);
+        }
+
+        function createRadar() {
+            // 创建大圆形平面作为雷达扫描区域
+            const geometry = new THREE.CircleGeometry(currentParams.radius, 64);
+            
+            // 使用新的RadarMaterial创建雷达扫描效果
+            radarMaterial = new RadarMaterial({
+                color: currentParams.color,
+                opacity: currentParams.opacity,
+                speed: currentParams.speed,
+                radius: currentParams.radius,
+                angle: currentParams.angle,
+                time: time
+            });
+
+            radarMesh = new THREE.Mesh(geometry, radarMaterial);
+            radarMesh.rotation.x = -Math.PI / 2; // 水平放置
+            radarMesh.position.y = 0.1; // 稍微抬高避免z-fighting
+            engine.scene.add(radarMesh);
+
+            console.log('✅ 扇形雷达创建完成 - 使用Aether3d引擎架构和RadarMaterial');
+            updateStatusInfo();
+        }
+
+        function initControls() {
+            document.getElementById('toggleAnimation').addEventListener('click', toggleAnimation);
+            document.getElementById('resetTime').addEventListener('click', () => { 
+                time.value = 0; 
+                console.log('时间已重置');
+            });
+
+            document.getElementById('speedSlider').addEventListener('input', updateParams);
+            document.getElementById('radiusSlider').addEventListener('input', updateParams);
+            document.getElementById('angleSlider').addEventListener('input', updateParams);
+            document.getElementById('opacitySlider').addEventListener('input', updateParams);
+            document.getElementById('colorPicker').addEventListener('input', updateParams);
+
+            // 相机控制事件
+            document.getElementById('resetCamera').addEventListener('click', resetCamera);
+            document.getElementById('topView').addEventListener('click', setTopView);
+            document.getElementById('frontView').addEventListener('click', setFrontView);
+
+            // FBX模型相关事件
+            document.getElementById('loadModel').addEventListener('click', loadFBXModel);
+            document.getElementById('applyRadarToModel').addEventListener('click', applyRadarToModel);
+            document.getElementById('removeModel').addEventListener('click', removeModel);
+
+            updateDisplayValues();
+        }
+
+        function updateParams() {
+            currentParams.speed = parseFloat(document.getElementById('speedSlider').value);
+            currentParams.radius = parseFloat(document.getElementById('radiusSlider').value);
+            currentParams.angle = parseFloat(document.getElementById('angleSlider').value);
+            currentParams.opacity = parseFloat(document.getElementById('opacitySlider').value);
+            currentParams.color = document.getElementById('colorPicker').value;
+
+            // 使用RadarMaterial的方法更新参数
+            if (radarMaterial && radarMaterial instanceof RadarMaterial) {
+                radarMaterial.updateParameters({
+                    speed: currentParams.speed,
+                    radius: currentParams.radius,
+                    angle: currentParams.angle,
+                    opacity: currentParams.opacity,
+                    color: currentParams.color
+                });
+                
+                // 更新几何体大小
+                if (radarMesh && radarMesh.geometry) {
+                    radarMesh.geometry.dispose();
+                    radarMesh.geometry = new THREE.CircleGeometry(currentParams.radius, 64);
+                }
+            } else {
+                // 重新创建雷达效果
+                if (radarMesh) {
+                    engine.scene.remove(radarMesh);
+                    createRadar();
+                }
+            }
+
+            updateDisplayValues();
+            updateStatusInfo();
+        }
+
+        function updateDisplayValues() {
+            document.getElementById('speedValue').textContent = currentParams.speed.toFixed(1);
+            document.getElementById('radiusValue').textContent = currentParams.radius.toString();
+            document.getElementById('angleValue').textContent = Math.round(currentParams.angle * 180 / Math.PI) + '°';
+            document.getElementById('opacityValue').textContent = Math.round(currentParams.opacity * 100) + '%';
+        }
+
+        function updateStatusInfo() {
+            const statusElement = document.getElementById('statusInfo');
+            if (statusElement) {
+                const status = isAnimating ? '扫描中' : '待机';
+                const angle = Math.round(currentParams.angle * 180 / Math.PI);
+                const modelStatus = loadedModel ? ' • 模型已加载' : '';
+                const scanAngle = isAnimating ? ` • 当前角度: ${Math.round((time.value * currentParams.speed) % (2 * Math.PI) * 180 / Math.PI)}°` : '';
+                statusElement.textContent = `状态: ${status} • 扇形: ${angle}° • 半径: ${currentParams.radius}m${modelStatus}${scanAngle}`;
+            }
+        }
+
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            const btn = document.getElementById('toggleAnimation');
+            btn.textContent = isAnimating ? '停止扫描' : '开始扫描';
+            btn.classList.toggle('active', isAnimating);
+            
+            console.log('雷达扫描状态:', isAnimating ? '开启' : '关闭');
+            
+            // 调试信息：显示当前参数
+            if (isAnimating) {
+                console.log('雷达参数:', {
+                    speed: currentParams.speed,
+                    radius: currentParams.radius,
+                    angle: currentParams.angle,
+                    angleDegrees: Math.round(currentParams.angle * 180 / Math.PI) + '°',
+                    time: time.value
+                });
+            }
+            
+            updateStatusInfo();
+        }
+
+        function setPreset(type) {
+            const presets = {
+                fast: { speed: 3.0, radius: 40, angle: 1.0, opacity: 0.9, color: '#ff0000' },
+                wide: { speed: 1.0, radius: 80, angle: 2.0, opacity: 0.6, color: '#0066ff' },
+                precise: { speed: 0.8, radius: 30, angle: 0.5, opacity: 0.9, color: '#00ff00' }
+            };
+
+            const preset = presets[type];
+            if (preset) {
+                Object.assign(currentParams, preset);
+                
+                document.getElementById('speedSlider').value = preset.speed;
+                document.getElementById('radiusSlider').value = preset.radius;
+                document.getElementById('angleSlider').value = preset.angle;
+                document.getElementById('opacitySlider').value = preset.opacity;
+                document.getElementById('colorPicker').value = preset.color;
+                
+                updateParams();
+                console.log(`应用预设: ${type}`, preset);
+            }
+        }
+
+        // 相机控制函数
+        function resetCamera() {
+            engine.camera.position.set(0, 60, 80);
+            if (orbitControlsScript?.getControls()) {
+                orbitControlsScript.getControls().target.set(0, 0, 0);
+                orbitControlsScript.getControls().update();
+            }
+        }
+
+        function setTopView() {
+            engine.camera.position.set(0, 100, 0);
+            if (orbitControlsScript?.getControls()) {
+                orbitControlsScript.getControls().target.set(0, 0, 0);
+                orbitControlsScript.getControls().update();
+            }
+        }
+
+        function setFrontView() {
+            engine.camera.position.set(0, 30, 80);
+            if (orbitControlsScript?.getControls()) {
+                orbitControlsScript.getControls().target.set(0, 0, 0);
+                orbitControlsScript.getControls().update();
+            }
+        }
+
+        function onWindowResize() {
+            if (engine) {
+                engine.resize();
+            }
+        }
+        
+        // FBX模型加载和处理功能
+        function loadFBXModel() {
+            // 由于没有实际的FBX文件，我们创建一个测试城市模型
+            createTestCityModel();
+            
+            /* 如果有实际的FBX文件，可以使用以下代码：
+            const loader = new FBXLoader();
+            loader.load('./model/shanghai.fbx', (object) => {
+                if (loadedModel) {
+                    scene.remove(loadedModel);
+                }
+                
+                loadedModel = object;
+                object.scale.set(0.1, 0.1, 0.1); // 调整大小
+                scene.add(object);
+                
+                console.log('FBX模型加载完成');
+                updateStatusInfo();
+            }, undefined, (error) => {
+                console.error('FBX模型加载失败:', error);
+                createTestCityModel(); // 回退到测试模型
+            });
+            */
+        }
+        
+        function createTestCityModel() {
+            if (loadedModel) {
+                scene.remove(loadedModel);
+            }
+            
+            const cityGroup = new THREE.Group();
+            
+            // 创建多个不同高度的建筑物
+            for (let i = 0; i < 30; i++) {
+                const height = 5 + Math.random() * 25;
+                const width = 3 + Math.random() * 4;
+                const depth = 3 + Math.random() * 4;
+                
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const material = new THREE.MeshLambertMaterial({ 
+                    color: new THREE.Color(0.3, 0.3, 0.3),
+                    transparent: true,
+                    opacity: 0.8
+                });
+                
+                const building = new THREE.Mesh(geometry, material);
+                building.position.set(
+                    (Math.random() - 0.5) * 100,
+                    height / 2,
+                    (Math.random() - 0.5) * 100
+                );
+                
+                // 保存原始材质引用
+                originalMaterials.set(building, material);
+                
+                cityGroup.add(building);
+            }
+            
+            loadedModel = cityGroup;
+            engine.scene.add(cityGroup);
+            
+            console.log('✅ 测试城市模型创建完成 - 使用Aether3d引擎架构');
+            updateStatusInfo();
+        }
+        
+        function applyRadarToModel() {
+            if (!loadedModel) {
+                alert('请先加载模型！');
+                return;
+            }
+            
+            loadedModel.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    handleRadarMaterial(child.material);
+                }
+            });
+            
+            console.log('✅ 雷达效果已应用到模型 - 使用BeforeMaterial');
+            updateStatusInfo();
+        }
+        
+        function handleRadarMaterial(material) {
+            if (Array.isArray(material)) {
+                material.forEach((mat) => {
+                    applyRadarEffect(mat);
+                });
+            } else {
+                applyRadarEffect(material);
+            }
+        }
+        
+        function applyRadarEffect(material) {
+            // 使用RadarMaterial替换原有材质
+            const radarMat = new RadarMaterial({
+                color: currentParams.color,
+                opacity: 0.5,
+                speed: currentParams.speed,
+                radius: currentParams.radius,
+                angle: currentParams.angle,
+                time: time
+            });
+            
+            // 复制基本属性
+            Object.assign(material, radarMat);
+        }
+        
+        function removeModel() {
+            if (loadedModel) {
+                engine.scene.remove(loadedModel);
+                loadedModel = null;
+                originalMaterials.clear();
+                console.log('✅ 模型已移除 - 使用Aether3d引擎架构');
+                updateStatusInfo();
+            }
+        }
+
+        // 引擎更新循环
+        function startEngineUpdateLoop() {
+            const updateScript = {
+                update: animate
+            };
+            engine.addScript(updateScript);
+        }
+
+        function animate() {
+            if (isAnimating) {
+                time.value += 0.015;
+                
+                // 更新RadarMaterial时间
+                if (radarMaterial && radarMaterial instanceof RadarMaterial) {
+                    radarMaterial.updateTime(0.015);
+                }
+                
+                // 更新状态信息
+                if (Math.floor(time.value * 60) % 60 === 0) {
+                    updateStatusInfo();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

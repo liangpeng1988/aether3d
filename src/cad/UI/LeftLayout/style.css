@@ -1,0 +1,131 @@
+/* 左侧工具箱容器 */
+.left-sidebar {
+  width: 360px;
+  background-color: #2a2a2a;
+  display: flex;
+  flex-direction: row-reverse; /* 水平排列，按钮在右，内容在左 */
+  transition: width 0.3s ease; /* 收缩/展开动画 */
+  flex-shrink: 0; /* 防止被压缩 */
+  order: 1; /* 确保在最左侧 */
+  height: 100%; /* 确保占满容器高度 */
+  position: relative; /* 确保定位上下文 */
+  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* 左侧工具箱收缩状态 */
+.left-sidebar.collapsed {
+  width: 30px;
+}
+
+/* 左侧工具箱内容区域 */
+.left-sidebar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #333;
+  color: white;
+  overflow: hidden;
+  order: 1; /* 确保在左侧 */
+  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* 左侧工具箱标题区域 */
+.left-sidebar-header {
+  padding: 8px;
+  border-bottom: 1px solid #555;
+  text-align: center;
+}
+
+/* 左侧工具箱标题文字 */
+.left-sidebar-title {
+  margin: 0;
+  color: white;
+}
+
+/* 左侧工具箱菜单内容区域 - 包含层级菜单 */
+.left-sidebar-menu {
+  flex: 1;
+  overflow-y: auto; /* 内容过多时可滚动 */
+  padding: 10px;
+}
+
+/* 调色板弹窗容器 */
+.color-palette {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 居中显示 */
+  background-color: #444;
+  padding: 12px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000; /* 确保在最上层 */
+  min-width: 180px;
+}
+
+/* 颜色网格容器 - 4列网格布局 */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+/* 颜色选项按钮 */
+.color-option {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* 选中的颜色选项 - 白色边框高亮 */
+.color-option.selected {
+  border: 2px solid white;
+}
+
+/* 未选中的颜色选项 - 灰色边框 */
+.color-option:not(.selected) {
+  border: 1px solid #666;
+}
+
+/* 自定义颜色选择器容器 */
+.custom-color-container {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 自定义颜色输入框 */
+.custom-color-input {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 自定义颜色标签文字 */
+.custom-color-label {
+  font-size: 13px;
+  color: white;
+}
+
+/* 收缩/展开按钮 */
+.collapse-button {
+  width: 30px;
+  background-color: #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-left: 1px solid #444;
+  flex-shrink: 0; /* 防止被压缩 */
+}
+
+/* 按钮内的箭头图标 */
+.collapse-button span {
+  color: #ccc;
+  font-size: 16px;
+}

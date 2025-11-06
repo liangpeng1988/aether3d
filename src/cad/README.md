@@ -40,7 +40,7 @@
 - **[canvas2d.html](file:///E:/UGit/aether3d/src/CAD/canvas2d.html)**: HTML示例页面，展示了Canvas2D组件的基础UI设计和交互，但不包含实际的组件引用
 - **[canvas2d-complete-example.html](file:///E:/UGit/aether3d/src/CAD/canvas2d-complete-example.html)**: 完整的HTML示例页面，展示了Canvas2D组件的完整UI设计和交互
 - **[Canvas2DExample.tsx](file:///E:/UGit/aether3d/src/CAD/Canvas2DExample.tsx)**: React组件示例，展示了如何在React应用中使用Canvas2D组件
-- **[Canvas2DCompleteExample.tsx](file:///E:/UGit/aether3d/src/CAD/Canvas2DCompleteExample.tsx)**: 完整的React组件示例，展示了Canvas2D组件的所有功能
+- **[MainLayout.tsx](file:///E:/UGit/aether3d/src/CAD/MainLayout.tsx)**: 新的主界面布局组件，采用上、左、中、右、下的布局结构
 
 ## 使用示例
 
@@ -115,3 +115,15 @@ export default MyCADComponent;
 - S：切换到缩放模式
 - Delete：删除选中对象
 - ESC：取消选择
+
+## 新主界面布局
+
+新的主界面布局(MainLayout.tsx)采用了经典的CAD软件界面设计，分为五个区域：
+
+1. **顶部区域**：包含标题栏、菜单栏和工具栏
+2. **左侧工具箱**：包含绘图工具、图层管理、属性设置等功能
+3. **中间画布区域**：2D/3D绘图区域
+4. **右侧属性栏**：显示和编辑选中对象的属性
+5. **底部任务栏**：显示文档信息、图层信息、绘制状态等
+
+这种布局方式提供了更好的用户体验和工作效率。

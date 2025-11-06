@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SceneLightingScript } from '../../../Engine/controllers/SceneLightingScript';
+import { SpotlightScript } from '../../../Engine/controllers/SpotlightScript';
+import { THREE } from '../../../Engine/core/global';
 
 interface SpotLightControlProps {
-  spotLightScript1: SceneLightingScript | null;
-  spotLightScript2: SceneLightingScript | null;
+  spotLightScript1: SpotlightScript | null;
+  spotLightScript2: SpotlightScript | null;
   isVisible: boolean;
   onVisibilityChange: (visible: boolean) => void;
 }
@@ -567,3 +568,25 @@ const SpotLightControl: React.FC<SpotLightControlProps> = ({
           />
         </div>
         
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={toggleLight2}
+            style={{
+              flex: 1,
+              padding: '8px',
+              backgroundColor: isLight2Enabled ? '#f44336' : '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            {isLight2Enabled ? '关闭光照' : '开启光照'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SpotLightControl;

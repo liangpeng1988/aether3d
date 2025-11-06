@@ -35,6 +35,8 @@ export interface EnvironmentConfig {
     environmentIntensity?: number;
     /** 是否显示背景 (true: 显示背景, false: 只影响材质) */
     showBackground?: boolean;
+    /** 原始背景 */
+    originalBackground?: THREE.Color | THREE.Texture | THREE.CubeTexture | null;
 }
 
 export class EnvironmentMapScript extends ScriptBase {
@@ -83,6 +85,7 @@ export class EnvironmentMapScript extends ScriptBase {
             backgroundIntensity: 1.0,
             environmentIntensity: 1.5,
             showBackground: false, // 默认不显示背景
+            originalBackground: null,
             ...options
         };
 
@@ -265,8 +268,8 @@ export class EnvironmentMapScript extends ScriptBase {
                 scene.backgroundBlurriness = this.config.backgroundBlurriness || 0.5;
                 scene.backgroundIntensity = this.config.backgroundIntensity || 1.0;
             } else {
-                // 不显示背景时，恢复原始背景或设置为null
-                scene.background = this.originalBackground || null;
+                // 不显示背景时，恢复原始背景或设置为灰色
+                scene.background = this.originalBackground || new THREE.Color(0x333333); // 灰色背景
             }
             
             // 设置环境强度
@@ -346,7 +349,7 @@ export class EnvironmentMapScript extends ScriptBase {
                 scene.backgroundIntensity = this.config.backgroundIntensity || 1.0;
             } else {
                 // 不显示背景时，恢复原始背景或设置为null
-                scene.background = this.originalBackground || null;
+                scene.background = this.originalBackground || new THREE.Color(0x333333);
             }
 
             // 应用环境光参数
@@ -368,7 +371,7 @@ export class EnvironmentMapScript extends ScriptBase {
                 this.scene.environment = this.originalEnvironment;
 
                 // 恢复原始背景
-                this.scene.background = this.originalBackground;
+                this.scene.background = this.originalBackground || new THREE.Color(0x333333);
 
                 this.currentEnvironment = null;
                 this.originalEnvironment = null;

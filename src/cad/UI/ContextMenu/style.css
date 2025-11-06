@@ -1,0 +1,78 @@
+/* 右键菜单容器 */
+.context-menu {
+  position: fixed;
+  background-color: #444;
+  border: 1px solid #666;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  min-width: 180px;
+  max-width: 300px;
+  z-index: 10000;
+  padding: 4px 0;
+  font-family: Arial, sans-serif;
+}
+
+/* 分隔线 */
+.menu-separator {
+  height: 1px;
+  background-color: #555;
+  margin: 4px 0;
+}
+
+/* 菜单项 */
+.menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  background-color: transparent;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s;
+  opacity: 1;
+  font-size: 13px;
+  user-select: none;
+}
+
+.menu-item.disabled {
+  cursor: not-allowed;
+  color: #888;
+  opacity: 0.5;
+}
+
+.menu-item:hover:not(.disabled) {
+  background-color: #555;
+}
+
+/* 菜单项内容 */
+.menu-item-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-item-icon {
+  font-size: 14px;
+  min-width: 16px;
+}
+
+/* 菜单项右侧 */
+.menu-item-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-item-shortcut {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.menu-item-arrow {
+  font-size: 12px;
+}
+
+/* 子菜单容器 */
+.submenu-container {
+  padding-left: 0px;
+}

@@ -1,0 +1,29 @@
+/* 任务栏容器 */
+.taskbar-container {
+  height: 30px;
+  background-color: #444;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-size: 12px;
+  border-top: 1px solid #666;
+  flex-shrink: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+/* 左侧信息区 */
+.taskbar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* 右侧信息区 */
+.taskbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}

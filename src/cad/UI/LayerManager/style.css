@@ -1,0 +1,528 @@
+/* 遮罩层 */
+.layer-manager-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(2px);
+}
+
+/* 对话框容器 */
+.layer-manager-dialog {
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  color: #e0e0e0;
+  border-radius: 12px;
+  width: 720px; /* 增加宽度从520px到720px */
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid #444;
+}
+
+/* 标题栏 */
+.layer-manager-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #3a3a3a, #2a2a2a);
+}
+
+.layer-manager-title {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* 关闭按钮 */
+.layer-manager-close-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.layer-manager-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* 内容区域 */
+.layer-manager-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* 图层列表区域 */
+.layer-list-section {
+  margin-bottom: 20px;
+  background-color: #2d2d2d;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 列表头部 */
+.layer-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #444;
+}
+
+.layer-list-header h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* 添加图层按钮 */
+.add-layer-btn {
+  padding: 8px 16px;
+  background: linear-gradient(to right, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.add-layer-btn:hover {
+  background: linear-gradient(to right, #45a049, #3d8b40);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.add-layer-btn:active {
+  transform: translateY(0);
+}
+
+/* 图层列表容器 */
+.layer-list {
+  background-color: #333;
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 350px;
+  overflow-y: auto;
+  border: 1px solid #444;
+}
+
+/* 图层项 */
+.layer-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background: linear-gradient(to right, #3a3a3a, #333);
+  transition: background-color 0.2s ease;
+}
+
+.layer-item:hover {
+  background: linear-gradient(to right, #424242, #3a3a3a);
+}
+
+.layer-item.selected {
+  background: linear-gradient(to right, #3a5a7a, #2d4a6a);
+  border-left: 3px solid #2196F3;
+}
+
+/* 图层项分割线 */
+.layer-item-divider {
+  height: 1px;
+  background-color: #444;
+  margin: 0 15px;
+}
+
+/* 可见性按钮 */
+.layer-visibility-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.layer-visibility-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.layer-visibility-btn.visible {
+  color: #4CAF50;
+}
+
+.layer-visibility-btn.hidden {
+  color: #888;
+}
+
+/* 锁定按钮 */
+.layer-lock-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.layer-lock-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.layer-lock-btn.locked {
+  color: #f44336;
+}
+
+.layer-lock-btn.unlocked {
+  color: #888;
+}
+
+/* 图层颜色指示器 */
+.layer-color-indicator {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #555;
+  border-radius: 4px;
+  margin-right: 12px;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.layer-color-indicator.selected {
+  border: 2px solid #2196F3;
+  box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
+}
+
+/* 图层隐藏斜线 */
+.layer-hidden-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 2px;
+  background-color: #f44336;
+  transform: translate(-50%, -50%) rotate(45deg);
+  z-index: 1;
+  border-radius: 1px;
+}
+
+/* 图层信息区域 */
+.layer-info {
+  flex: 1;
+  color: #e0e0e0;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.layer-name {
+  color: #fff;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layer-line-count {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+.layer-locked-badge {
+  font-size: 10px;
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+.layer-hidden-badge {
+  font-size: 10px;
+  color: #888;
+  background-color: rgba(136, 136, 136, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+/* 编辑模式 */
+.layer-edit-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.layer-edit-input {
+  flex: 1;
+  padding: 6px 10px;
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  margin-right: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.layer-edit-input:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.layer-edit-confirm-btn {
+  padding: 6px 12px;
+  background: linear-gradient(to right, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.layer-edit-confirm-btn:hover {
+  background: linear-gradient(to right, #45a049, #3d8b40);
+}
+
+.layer-edit-cancel-btn {
+  padding: 6px 12px;
+  background: linear-gradient(to right, #f44336, #da190b);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.layer-edit-cancel-btn:hover {
+  background: linear-gradient(to right, #da190b, #c1170a);
+}
+
+/* 删除按钮 */
+.layer-delete-btn {
+  background: none;
+  border: none;
+  color: #f44336;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.layer-delete-btn:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #ff5252;
+}
+
+/* 空状态 */
+.layer-list-empty {
+  padding: 30px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+/* 操作说明区域 */
+.layer-help-section {
+  background: linear-gradient(to right, #3a3a3a, #333);
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 13px;
+  border: 1px solid #444;
+}
+
+.layer-help-title {
+  margin: 0 0 10px 0;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.layer-help-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #ccc;
+}
+
+.layer-help-list li {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* 底部操作栏 */
+.layer-manager-footer {
+  padding: 18px 20px;
+  border-top: 1px solid #444;
+  display: flex;
+  justify-content: flex-end;
+  background: linear-gradient(to right, #3a3a3a, #2a2a2a);
+}
+
+/* 关闭按钮 */
+.layer-manager-close-footer-btn {
+  padding: 10px 20px;
+  background: linear-gradient(to right, #2196F3, #1976D2);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.layer-manager-close-footer-btn:hover {
+  background: linear-gradient(to right, #1976D2, #1565C0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.layer-manager-close-footer-btn:active {
+  transform: translateY(0);
+}
+
+/* 刷新按钮 - 已移除，但保留样式以防将来需要 */
+.refresh-layers-btn {
+  padding: 6px 12px;
+  background: linear-gradient(to right, #607D8B, #455A64);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.refresh-layers-btn:hover {
+  background: linear-gradient(to right, #546E7A, #37474F);
+}
+
+.refresh-layers-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 分享按钮 */
+.share-layers-btn {
+  padding: 6px 12px;
+  background: linear-gradient(to right, #FF9800, #F57C00);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.share-layers-btn:hover {
+  background: linear-gradient(to right, #F57C00, #EF6C00);
+}
+
+.share-layers-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.layer-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 滚动条样式 */
+.layer-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.layer-list::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+.layer-list::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.layer-list::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}

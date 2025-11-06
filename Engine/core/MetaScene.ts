@@ -1,35 +1,78 @@
 import * as THREE from 'three';
-import type { IScript } from "../interface";
+import { MetadataManager } from './MetadataManager';
+import { ObjectMetadata } from './ObjectMetadata';
 
 /**
- * MetaScene 类用于管理场景的元数据
- * 包括场景对象、相机、脚本等信息
+ * 带元数据管理功能的场景类
+ * 扩展THREE.Scene，自动为添加到场景的对象创建元数据
  */
-export class MetaScene {
-    /** 场景名称 */
-    public name: string;
+export class MetaScene extends THREE.Scene {
+  private metadataManager: MetadataManager;
 
-    /** THREE.js 场景对象 */
-    public scene: THREE.Scene;
+  constructor(metadataManager?: MetadataManager) {
+    super();
+    this.metadataManager = metadataManager || new MetadataManager();
+  }
 
-    /** 摄像机对象 */
-    public camera: THREE.PerspectiveCamera;
+  /**
+   * 重写add方法，自动为添加的对象创建元数据
+   * @param object 要添加到场景的3D对象
+   * @returns 添加的对象
+   */
+  public override add(...object: THREE.Object3D[]): this {
+    // 调用父类的add方法
+    super.add(...object);
 
-    /** 场景级别的脚本列表 */
-    public scripts: IScript[];
-
-    /** 对象级别的脚本映射，将对象与关联的脚本列表进行映射 */
-    public objectScripts: Map<THREE.Object3D, IScript[]>;
-
-    /** 已启动的脚本集合，用于跟踪哪些脚本已经被执行过 start 方法 */
-    public startedScripts: Set<IScript>;
-
-    constructor(name: string, scene: THREE.Scene, camera: THREE.PerspectiveCamera) {
-        this.name = name;
-        this.scene = scene;
-        this.camera = camera;
-        this.scripts = [];
-        this.objectScripts = new Map();
-        this.startedScripts = new Set();
+    // 为每个添加的对象创建元数据
+    for (const obj of object) {
+      this.createObjectMetadataForObject(obj);
     }
+
+    return this;
+  }
+
+  /**
+   * 为对象创建元数据
+   * @param object 3D对象
+   */
+  private createObjectMetadataForObject(object: THREE.Object3D): void {
+    // 为对象本身创建元数据
+    const name = object.name || object.type;
+    const type = object.type;
+    const metadata = this.metadataManager.createObjectMetadata(object, name, type);
+    
+    // 输出元数据信息
+    // console.log(`[MetaScene] 创建对象元数据: ID=${metadata.id}, Name=${metadata.name}, Type=${metadata.type}`);
+
+    // 递归为子对象创建元数据
+    object.children.forEach(child => {
+      this.createObjectMetadataForObject(child);
+    });
+  }
+
+  /**
+   * 获取元数据管理器
+   * @returns 元数据管理器实例
+   */
+  public getMetadataManager(): MetadataManager {
+    return this.metadataManager;
+  }
+  
+  /**
+   * 获取对象的元数据
+   * @param object 3D对象
+   * @returns 对象元数据，如果不存在则返回undefined
+   */
+  public getObjectMetadata(object: THREE.Object3D): ObjectMetadata | undefined {
+    return this.metadataManager.getObjectMetadata(object);
+  }
+  
+  /**
+   * 通过ID获取对象元数据
+   * @param id 对象ID
+   * @returns 对象元数据，如果不存在则返回undefined
+   */
+  public getObjectMetadataById(id: string): ObjectMetadata | undefined {
+    return this.metadataManager.getObjectMetadataById(id);
+  }
 }

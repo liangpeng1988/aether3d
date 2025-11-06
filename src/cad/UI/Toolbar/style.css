@@ -1,0 +1,97 @@
+/* 工具栏容器 */
+.toolbar-container {
+  background-color: #222;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 5px 0;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  border-bottom: 1px solid #444;
+  min-height: 48px;
+  position: relative;
+}
+
+/* 工具栏内容容器 */
+.toolbar-content {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  flex: 1;
+  padding: 0 5px;
+  scrollbar-width: none; /* 隐藏滚动条（Firefox） */
+  -ms-overflow-style: none; /* 隐藏滚动条（IE/Edge） */
+}
+
+/* 隐藏滚动条（WebKit浏览器） */
+.toolbar-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* 工具组容器 */
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  padding: 0 5px;
+}
+
+/* 工具按钮 */
+.toolbar-btn {
+  height: 36px;
+  margin: 0 2px;
+  padding: 0 8px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.toolbar-btn.short {
+  min-width: 40px;
+}
+
+.toolbar-btn.long {
+  min-width: 60px;
+}
+
+.toolbar-btn.active {
+  background-color: #555;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  background-color: #444;
+}
+
+.toolbar-btn.active:hover:not(:disabled) {
+  background-color: #555;
+}
+
+.toolbar-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 按钮图标 */
+.toolbar-btn-icon {
+  font-size: 14px;
+}
+
+.toolbar-btn-icon.with-label {
+  margin-right: 4px;
+}
+
+/* 分隔线 */
+.toolbar-separator {
+  width: 1px;
+  background-color: #444;
+  height: 30px;
+  margin: 0 5px;
+}

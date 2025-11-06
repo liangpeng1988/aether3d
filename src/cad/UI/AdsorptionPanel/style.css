@@ -1,0 +1,120 @@
+/* 吸附控制面板容器 */
+.adsorption-panel {
+  background-color: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 12px;
+  color: #e0e0e0;
+  font-family: Arial, sans-serif;
+}
+
+/* 吸附控制面板头部 */
+.adsorption-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #444;
+}
+
+.adsorption-panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+/* 启用切换 */
+.adsorption-enable-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.adsorption-enable-toggle input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* 吸附控制面板内容 */
+.adsorption-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 设置组 */
+.adsorption-setting-group {
+  background-color: #333;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.adsorption-setting-header {
+  margin-bottom: 8px;
+}
+
+.adsorption-setting-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.adsorption-setting-label input {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+/* 设置控制 */
+.adsorption-setting-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.adsorption-setting-control label {
+  min-width: 40px;
+  color: #aaa;
+}
+
+.adsorption-setting-control input[type="range"] {
+  flex: 1;
+  height: 4px;
+  background: #444;
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.adsorption-setting-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.adsorption-setting-control input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+  border: none;
+}
+
+.adsorption-setting-control span {
+  min-width: 30px;
+  text-align: right;
+  color: #ccc;
+}

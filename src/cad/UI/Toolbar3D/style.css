@@ -1,0 +1,61 @@
+.canvas3d-toolbar {
+  padding: 10px;
+}
+
+.canvas3d-toolbar .menu-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.canvas3d-toolbar .menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.canvas3d-toolbar .menu-item .icon {
+  margin-right: 8px;
+}
+
+.canvas3d-toolbar .submenu {
+  margin-left: 16px;
+  margin-top: 4px;
+}
+
+.canvas3d-toolbar .submenu .menu-item {
+  padding: 6px 12px;
+}
+
+/* 新的工具栏按钮样式 */
+.toolbar-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; /* 圆形按钮 */
+  cursor: pointer;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 渐变背景 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.toolbar-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.toolbar-button.active {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.toolbar-button svg {
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+}

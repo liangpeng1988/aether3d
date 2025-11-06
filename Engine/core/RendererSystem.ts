@@ -56,7 +56,9 @@ export function createScene(name: string):THREE.Scene {
         camera: createCamera(name + 'Camera', window.innerWidth/window.innerHeight),
         scripts: [],
         objectScripts: new Map(),
-        startedScripts: new Set()
+        startedScripts: new Set(),
+        objectMetadata: new Map(),
+        layerMetadata: new Map()
     };
     SceneManager.addScene(name,sceneData);
     return scene;

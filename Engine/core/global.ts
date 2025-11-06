@@ -30,6 +30,9 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import * as TWEEN from '@tweenjs/tween.js'
 
+// 创建一个全局的 TWEEN Group 实例用于管理所有动画
+export const TweenGroup = new TWEEN.Group();
+
 
 // 导出 THREE 作为命名空间和其他组件
 export {

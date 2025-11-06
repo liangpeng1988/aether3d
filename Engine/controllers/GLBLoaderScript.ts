@@ -495,6 +495,18 @@ export class GLBLoaderScript extends ScriptBase {
                     console.error(`[GLBLoaderScript] 加载GLB模型失败: ${url}`, error);
                     this.loadingModels.delete(url);
 
+                    // 检查错误类型并提供更详细的错误信息
+                    let errorMessage = '未知错误';
+                    if (error instanceof Error) {
+                        errorMessage = error.message;
+                        
+                        // 检查是否是网络错误（如返回HTML而不是GLB）
+                        if (errorMessage.includes('Unexpected token') && errorMessage.includes('<')) {
+                            console.warn(`[GLBLoaderScript] 检测到可能的网络错误：服务器返回了HTML而不是GLB文件。URL: ${url}`);
+                            console.warn(`[GLBLoaderScript] 请检查文件路径是否正确，或服务器是否正确配置以提供GLB文件。`);
+                        }
+                    }
+
                     if (options.onError) {
                         options.onError(error);
                     }

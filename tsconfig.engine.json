@@ -39,6 +39,6 @@
       "@engine/*": ["Engine/*"]
     }
   },
-  "include": ["Engine/**/*"],
+  "include": ["Engine/**/*", "Engine/types/**/*"],
   "exclude": ["node_modules", "dist"]
 }

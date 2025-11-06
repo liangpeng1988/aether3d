@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Aether3d } from '../../Engine';
 import { EnvironmentMapScript } from '../../Engine';
@@ -17,6 +17,7 @@ import Canvas3D, { Scene3DHandle } from './components/Canvas3D';
 import Group4 from './components/Group4';
 import OverviewPanel from './components/OverviewPanel';
 import FloorPlanPanel from './components/FloorPlanPanel';
+import AlignmentDemo from './components/AlignmentDemo';
 
 const Home3D: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Home3D: React.FC = () => {
   const environmentMapScriptRef = useRef<EnvironmentMapScript | null>(null);
   const glbLoaderScriptRef = useRef<GLBLoaderScript | null>(null);
   const scene3DRef = useRef<Scene3DHandle | null>(null);
+  const [showAlignmentDemo, setShowAlignmentDemo] = useState(false);
 
   // 处理点击事件的函数
   const handleItemClick = (item: string) => {
@@ -40,6 +42,11 @@ const Home3D: React.FC = () => {
     rendererRef.current = renderer;
     environmentMapScriptRef.current = environmentMapScript;
     glbLoaderScriptRef.current = glbLoaderScript;
+  };
+
+  // 切换对齐演示的显示状态
+  const toggleAlignmentDemo = () => {
+    setShowAlignmentDemo(!showAlignmentDemo);
   };
 
   useEffect(() => {
@@ -160,10 +167,27 @@ const Home3D: React.FC = () => {
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        fontSize: '14px'
+                        fontSize: '14px',
+                        marginBottom: '10px'
                       }}
                     >
                       测试LibreDWG库
+                    </button>
+                    
+                    {/* 对齐系统演示切换按钮 */}
+                    <button 
+                      onClick={toggleAlignmentDemo}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#2196F3',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      {showAlignmentDemo ? '隐藏对齐演示' : '显示对齐演示'}
                     </button>
                   </div>
                   
@@ -184,6 +208,14 @@ const Home3D: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* 对齐系统演示组件 */}
+      {showAlignmentDemo && rendererRef.current && (
+        <AlignmentDemo 
+          renderer={rendererRef.current} 
+          onAlignmentComplete={() => console.log('对齐操作完成')}
+        />
+      )}
     </div>
   );
 };

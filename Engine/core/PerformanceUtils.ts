@@ -580,7 +580,6 @@ export class FrameRateMonitor {
         if (this.monitoring) return;
         this.monitoring = true;
         this.lastTime = performance.now();
-        this.frameId = requestAnimationFrame(this.update.bind(this));
     }
 
     /**
@@ -594,9 +593,9 @@ export class FrameRateMonitor {
     }
 
     /**
-     * 更新帧率
+     * 手动调用的更新方法（由主渲染循环调用）
      */
-    private update(timestamp: number): void {
+    public updateFromMainLoop(timestamp: number): void {
         if (!this.monitoring) return;
 
         this.frameCount++;
@@ -621,8 +620,6 @@ export class FrameRateMonitor {
             this.frameCount = 0;
             this.lastTime = timestamp;
         }
-
-        this.frameId = requestAnimationFrame(this.update.bind(this));
     }
 
     /**

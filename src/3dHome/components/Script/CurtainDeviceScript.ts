@@ -1,5 +1,5 @@
 import { ScriptBase } from "../../../../Engine/core/ScriptBase";
-import { THREE, TWEEN } from "../../../../Engine/core/global";
+import { THREE, TWEEN ,TweenGroup} from "../../../../Engine/core/global";
 import type {GLBLoaderScript} from "../../../../Engine/controllers/GLBLoaderScript.ts";
 import {ShaderGlowMaterial} from "../../../../Engine/materials/ShaderGlowMaterial.ts";
 import {SetPBRDefaultOrHighlightMat} from "./utils.ts";
@@ -251,7 +251,7 @@ export class CurtainDeviceScript extends ScriptBase {
                         object.material.needsUpdate = true;
                         this.engine()?.disableSelection(object.name);
                     }
-                    if (object.name === '网格_1' && object instanceof THREE.Mesh) {
+                    if (object.name === 'baiye' && object instanceof THREE.Mesh) {
                         const geometry = object.geometry;
                         if (!geometry.attributes && !geometry.attributes.uv1) return;
                         this.baiye = object.parent;
@@ -262,26 +262,26 @@ export class CurtainDeviceScript extends ScriptBase {
                         object.material =  materials.defaultMat as THREE.MeshStandardMaterial;
                         object.material.needsUpdate = true;
 
-                        // 创建打开动画（百叶窗收缩）
-                        const openScale = {
-                            x: this.originalShuttersScale?.x || 1,
-                            y: this.originalShuttersScale?.y || 1, // 收缩到较小的高度
-                            z: 0.004
-                        };
+                        // // 创建打开动画（百叶窗收缩）
+                        // const openScale = {
+                        //     x: this.originalShuttersScale?.x || 1,
+                        //     y: this.originalShuttersScale?.y || 1, // 收缩到较小的高度
+                        //     z: 0.004
+                        // };
 
-                        this.meshShuttersOpenTweens = new TWEEN.Tween(this.baiye.scale)
-                            .to(openScale, 1200)
-                            .easing(TWEEN.Easing.Exponential.Out);
-                        // 创建关闭动画（百叶窗展开）
-                        const closeScale = this.originalShuttersScale ? {
-                            x: this.originalShuttersScale.x,
-                            y: this.originalShuttersScale.y,
-                            z: this.originalShuttersScale.z
-                        } : { x: 1, y: 1, z: 1 };
+                        // this.meshShuttersOpenTweens = new TWEEN.Tween(this.baiye.scale,TweenGroup)
+                        //     .to(openScale, 1200)
+                        //     .easing(TWEEN.Easing.Exponential.Out);
+                        // // 创建关闭动画（百叶窗展开）
+                        // const closeScale = this.originalShuttersScale ? {
+                        //     x: this.originalShuttersScale.x,
+                        //     y: this.originalShuttersScale.y,
+                        //     z: this.originalShuttersScale.z
+                        // } : { x: 1, y: 1, z: 1 };
 
-                        this.meshShuttersCloseTweens = new TWEEN.Tween(this.baiye.scale)
-                            .to(closeScale, 1200)
-                            .easing(TWEEN.Easing.Exponential.Out);
+                        // this.meshShuttersCloseTweens = new TWEEN.Tween(this.baiye.scale,TweenGroup)
+                        //     .to(closeScale, 1200)
+                        //     .easing(TWEEN.Easing.Exponential.Out);
                     }
                 }
                 else
@@ -316,16 +316,16 @@ export class CurtainDeviceScript extends ScriptBase {
                             z: this.originalLeftScale?.z
                         };
 
-                        this.meshLeftOpenTweens = new TWEEN.Tween(this.meshLeft.scale)
+                        this.meshLeftOpenTweens = new TWEEN.Tween(this.meshLeft.scale,TweenGroup)
                             .to(openScale, 1200)
                             .easing(TWEEN.Easing.Exponential.Out);
 
-                        this.meshRightOpenTweens = new TWEEN.Tween(this.meshRight.scale)
+                        this.meshRightOpenTweens = new TWEEN.Tween(this.meshRight.scale,TweenGroup)
                             .to(openScale, 1200)
                             .easing(TWEEN.Easing.Exponential.Out);
 
                         // 创建关闭动画（窗帘展开）
-                        this.meshLeftCloseTweens = new TWEEN.Tween(this.meshLeft.scale)
+                        this.meshLeftCloseTweens = new TWEEN.Tween(this.meshLeft.scale,TweenGroup)
                             .to({
                                 x: this.originalLeftScale?.x,
                                 y: this.originalLeftScale?.y,
@@ -333,7 +333,7 @@ export class CurtainDeviceScript extends ScriptBase {
                             }, 1200)
                             .easing(TWEEN.Easing.Exponential.Out);
 
-                        this.meshRightCloseTweens = new TWEEN.Tween(this.meshRight.scale)
+                        this.meshRightCloseTweens = new TWEEN.Tween(this.meshRight.scale,TweenGroup)
                             .to({
                                 x: this.originalRightScale?.x,
                                 y: this.originalRightScale?.y,
@@ -343,8 +343,6 @@ export class CurtainDeviceScript extends ScriptBase {
                     }
                 }
             });
-
-
         } else {
             console.error("CurtainDeviceScript: 模型加载失败，没有返回有效的场景对象");
         }
@@ -399,17 +397,6 @@ export class CurtainDeviceScript extends ScriptBase {
     public override update(): void {
         if (!this.configs || this.isPaused) {
             return;
-        }
-        if (this.configs.type === 'Shutters') {
-            // 确保百叶窗动画得到更新
-            this.meshShuttersOpenTweens?.update();
-            this.meshShuttersCloseTweens?.update();
-        } else {
-            // 确保窗帘动画得到更新
-            this.meshLeftOpenTweens?.update();
-            this.meshRightOpenTweens?.update();
-            this.meshLeftCloseTweens?.update();
-            this.meshRightCloseTweens?.update();
         }
     }
 

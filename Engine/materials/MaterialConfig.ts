@@ -19,5 +19,15 @@ export interface MaterialConfig {
     
     depthWrite?: boolean;
     /** 材质类型 */
-    type?: 'standard' | 'basic' | 'lambert' | 'phong';
+    type?: 'standard' | 'basic' | 'lambert' | 'phong' | 'diffusion';
+    
+    // 扩散材质专用参数
+    /** 高亮颜色 (用于扩散材质) */
+    highlightColor?: THREE.Color | string | number;
+    /** 动画速度 (用于扩散材质) */
+    speed?: number;
+    /** 扩散半径 (用于扩散材质) */
+    radius?: number;
+    /** 扩散宽度 (用于扩散材质) */
+    width?: number;
 }

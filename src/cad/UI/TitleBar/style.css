@@ -1,0 +1,326 @@
+/* 标题栏容器 */
+.titlebar-container {
+  display: flex;
+  align-items: center;
+  background-color: #333;
+  color: white;
+  min-height: 52px; /* 从 32px 增加到 52px */
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/* Logo 区域 */
+.titlebar-logo {
+  padding-right: 15px;
+  border-right: 1px solid #555;
+}
+
+/* Logo 按钮 */
+.logo-btn {
+  font-weight: bold;
+  font-size: 14px;
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.logo-btn:hover {
+  background-color: #444;
+}
+
+/* 2D/3D 切换区域 */
+.titlebar-view-toggle {
+  display: flex;
+  padding: 0 10px;
+  border-right: 1px solid #555;
+}
+
+/* 主页按钮区域 */
+.titlebar-home {
+  padding: 0 10px;
+  border-right: 1px solid #555;
+}
+
+/* 主页按钮 */
+.home-btn {
+  padding: 6px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+  border-radius: 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-btn:hover {
+  background-color: #45a049;
+}
+
+/* 视图切换按钮 */
+.view-toggle-btn {
+  padding: 6px 12px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  border-radius: 4px;
+}
+
+.view-toggle-btn:hover {
+  background-color: #1976D2;
+}
+
+/* 文档列表容器 */
+.titlebar-documents {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 文档标签容器 */
+.documents-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-height: 100%;
+  padding: 0;
+  height: 100%;
+  user-select: none;
+}
+
+/* 文档标签 */
+.document-tab {
+  padding: 6px 12px;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: center;
+  border-radius: 4px 4px 0 0;
+  height: calc(100% - 4px);
+  position: relative;
+  top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+}
+
+.document-tab.active {
+  background-color: #333;
+  z-index: 2;
+}
+
+.document-tab.inactive {
+  background-color: #444;
+  z-index: 1;
+}
+
+.document-tab.inactive:hover {
+  background-color: #555;
+}
+
+/* 空文档提示 */
+.documents-empty {
+  color: #aaa;
+  font-size: 12px;
+  font-style: italic;
+  padding: 0 16px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+/* 标签关闭按钮 */
+.tab-close-btn {
+  margin-left: 8px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 8px;
+  padding: 0;
+  width: 10px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  line-height: 1;
+}
+
+/* 新建文档按钮 */
+.new-document-btn {
+  margin-left: 10px;
+  padding: 4px 8px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.new-document-btn:hover {
+  background-color: #45a049;
+}
+
+/* 主页标签页容器 */
+.titlebar-view-tabs {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 主页标签容器 */
+.view-tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-height: 100%;
+  padding: 0;
+  height: 100%;
+}
+
+/* 主页标签 */
+.view-tab {
+  padding: 6px 12px;
+  background-color: #444;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: center;
+  border-radius: 4px 4px 0 0;
+  height: calc(100% - 4px);
+  position: relative;
+  top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+}
+
+.view-tab:hover {
+  background-color: #555;
+}
+
+/* 新建主页按钮 */
+.new-view-btn {
+  margin-left: 10px;
+  padding: 4px 8px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.new-view-btn:hover {
+  background-color: #1976D2;
+}
+
+/* 用户信息区域 */
+.titlebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  margin-left: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* 用户名称 */
+.user-name {
+  font-size: 14px;
+  color: white;
+  font-weight: 400;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* 用户头像容器 */
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.user-avatar:hover {
+  background-color: #666;
+}
+
+/* 用户头像图片 */
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 用户头像占位符 */
+.user-avatar-placeholder {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* 新手指导按钮 */
+.guide-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #4CAF50;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, transform 0.2s;
+  line-height: 1;
+}
+
+.guide-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+.guide-btn:active {
+  transform: scale(0.95);
+}

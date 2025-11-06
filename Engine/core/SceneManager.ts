@@ -30,7 +30,9 @@ export class SceneManager {
                 camera: createCamera(name + 'Camera', window.innerWidth / window.innerHeight),
                 scripts: [],
                 objectScripts: new Map(),
-                startedScripts: new Set()
+                startedScripts: new Set(),
+                objectMetadata: new Map(),
+                layerMetadata: new Map()
             };
             this.addScene(name, sceneData);
             return sceneData;

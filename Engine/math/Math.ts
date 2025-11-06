@@ -84,13 +84,13 @@ export function randomIntRange(min: number, max: number): number {
  */
 export function createGradientAlphaMap(direction: 'bottomToTop' | 'topToBottom' | 'leftToRight' | 'rightToLeft' = 'bottomToTop'): THREE.CanvasTexture {
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = 2048;
+    canvas.height = 2048;
     const ctx = canvas.getContext('2d')!;
     
     // 设置高质量绘制参数，避免点状瑕疵
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    // ctx.imageSmoothingEnabled = true;
+    // ctx.imageSmoothingQuality = 'high';
 
     let gradient;
     switch (direction) {
@@ -123,8 +123,8 @@ export function createGradientAlphaMap(direction: 'bottomToTop' | 'topToBottom' 
     const alphaMap = new THREE.CanvasTexture(canvas);
     alphaMap.wrapS = THREE.RepeatWrapping;
     alphaMap.wrapT = THREE.RepeatWrapping;
-    alphaMap.magFilter = THREE.LinearFilter;  // 使用线性过滤提高质量
-    alphaMap.minFilter = THREE.LinearFilter;  // 使用线性过滤提高质量
+    // alphaMap.magFilter = THREE.LinearFilter;  // 使用线性过滤提高质量
+    // alphaMap.minFilter = THREE.LinearFilter;  // 使用线性过滤提高质量
 
     return alphaMap;
 }
@@ -150,4 +150,50 @@ export function loadTexture(url: string): Promise<THREE.Texture> {
             reject
         );
     });
+}
+
+/**
+ * 计算两点之间的欧几里得距离
+ * @param point1 第一个点的坐标 {x, y, z}
+ * @param point2 第二个点的坐标 {x, y, z}
+ * @returns 两点之间的距离
+ */
+export function calculateDistance(point1: {x: number, y: number, z: number}, point2: {x: number, y: number, z: number}): number {
+    const dx = point2.x - point1.x;
+    const dy = point2.y - point1.y;
+    const dz = point2.z - point1.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+/**
+ * 计算两点之间距离的平方（避免开方运算，性能更好）
+ * @param point1 第一个点的坐标 {x, y, z}
+ * @param point2 第二个点的坐标 {x, y, z}
+ * @returns 两点之间距离的平方
+ */
+export function calculateDistanceSquared(point1: {x: number, y: number, z: number}, point2: {x: number, y: number, z: number}): number {
+    const dx = point2.x - point1.x;
+    const dy = point2.y - point1.y;
+    const dz = point2.z - point1.z;
+    return dx * dx + dy * dy + dz * dz;
+}
+
+/**
+ * 使用Three.js Vector3计算两点之间的距离
+ * @param point1 第一个点
+ * @param point2 第二个点
+ * @returns 两点之间的距离
+ */
+export function calculateDistanceWithVector3(point1: THREE.Vector3, point2: THREE.Vector3): number {
+    return point1.distanceTo(point2);
+}
+
+/**
+ * 使用Three.js Vector3计算两点之间距离的平方
+ * @param point1 第一个点
+ * @param point2 第二个点
+ * @returns 两点之间距离的平方
+ */
+export function calculateDistanceSquaredWithVector3(point1: THREE.Vector3, point2: THREE.Vector3): number {
+    return point1.distanceToSquared(point2);
 }

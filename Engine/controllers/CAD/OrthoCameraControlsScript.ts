@@ -339,10 +339,16 @@ export class OrthoCameraControlsScript extends ScriptBase {
      * 鼠标抬起事件处理
      */
     private onMouseUp = (event: MouseEvent) => {
+        // 只有当控制器启用时才处理鼠标抬起事件
         if (!this._enabled) return;
+        
+        // 只处理鼠标中键和右键
+        if (event.button !== 1 && event.button !== 2) return;
         
         this.isPanning = false;
         this.isZooming = false;
+        
+        event.preventDefault();
     }
 
     /**

@@ -1,0 +1,266 @@
+/* 层级面板容器 */
+.hierarchy-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+/* 标题和统计信息区域 */
+.hierarchy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #252525;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+}
+
+/* 层级面板标题 */
+.hierarchy-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4CAF50;
+}
+
+/* 统计信息 */
+.hierarchy-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #999;
+}
+
+.hierarchy-stats span {
+  cursor: help;
+}
+
+/* 工具栏 */
+.hierarchy-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 15px;
+  background-color: #282828;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+}
+
+.hierarchy-tool-btn {
+  padding: 4px 10px;
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.hierarchy-tool-btn:hover {
+  background-color: #404040;
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+/* 层级内容区域 */
+.hierarchy-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 0;
+}
+
+/* 层级节点 */
+.hierarchy-node {
+  user-select: none;
+}
+
+/* 节点内容 */
+.hierarchy-node-content {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  font-size: 13px;
+  border-left: 2px solid transparent;
+}
+
+.hierarchy-node-content:hover {
+  background-color: #333;
+}
+
+.hierarchy-node-content.hovered {
+  background-color: #333;
+}
+
+.hierarchy-node-content.selected {
+  background-color: #2d4a2f;
+  border-left-color: #4CAF50;
+}
+
+/* 展开/折叠按钮 */
+.hierarchy-toggle {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  font-size: 10px;
+  color: #999;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.hierarchy-toggle:hover {
+  color: #4CAF50;
+}
+
+.hierarchy-toggle-placeholder {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+/* 对象图标 */
+.hierarchy-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+/* 对象名称 */
+.hierarchy-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #e0e0e0;
+  margin-right: 8px;
+  cursor: text;
+}
+
+.hierarchy-name.locked {
+  color: #ff9800;
+  font-style: italic;
+}
+
+.hierarchy-node-content.selected .hierarchy-name {
+  color: #fff;
+  font-weight: 500;
+}
+
+.hierarchy-node-content.selected .hierarchy-name.locked {
+  color: #ffcc80;
+}
+
+/* 锁定指示器 */
+.hierarchy-locked-indicator {
+  margin-left: 6px;
+  font-size: 12px;
+  color: #ff9800;
+}
+
+/* 名称编辑输入框 */
+.hierarchy-name-input {
+  flex: 1;
+  padding: 2px 6px;
+  margin-right: 8px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border: 1px solid #4CAF50;
+  border-radius: 3px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+}
+
+.hierarchy-name-input:focus {
+  border-color: #66BB6A;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* 对象类型 */
+.hierarchy-type {
+  font-size: 11px;
+  color: #777;
+  margin-right: 8px;
+  padding: 2px 6px;
+  background-color: #222;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* 锁定按钮 */
+.hierarchy-lock {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.hierarchy-lock:hover {
+  background-color: #404040;
+}
+
+/* 可见性按钮 */
+.hierarchy-visibility {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.hierarchy-visibility:hover {
+  background-color: #404040;
+}
+
+/* 子节点容器 */
+.hierarchy-children {
+  /* 子节点通过 paddingLeft 实现缩进 */
+}
+
+/* 占位符 */
+.hierarchy-placeholder {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+}
+
+/* 滚动条样式 */
+.hierarchy-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.hierarchy-content::-webkit-scrollbar-track {
+  background: #222;
+}
+
+.hierarchy-content::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.hierarchy-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

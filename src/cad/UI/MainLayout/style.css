@@ -1,0 +1,311 @@
+/* ========================================
+   主布局容器样式
+   ======================================== */
+
+/* 主布局容器 - 占满整个视口 */
+.main-layout {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 防止内容溢出 */
+}
+
+/* ========================================
+   顶部区域样式
+   ======================================== */
+
+/* 顶部区域容器 - 包含标题栏、菜单栏、工具栏 */
+.top-area {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; /* 防止被压缩 */
+  width: 100%; /* 确保占满容器宽度 */
+  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* 菜单栏容器 */
+.menu-bar-container {
+  background-color: #333;
+  color: white;
+  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* ========================================
+   中间区域样式
+   ======================================== */
+
+/* 中间区域容器 - 包含左侧工具箱、画布、右侧属性栏 */
+.middle-area {
+  flex: 1; /* 占据剩余空间 */
+  display: flex;
+  flex-direction: row; /* 明确指定水平排列 */
+  min-height: 0; /* 防止flex子元素溢出 */
+  overflow: hidden;
+  height: 100%; /* 确保占满容器高度 */
+  align-items: stretch; /* 确保子元素高度拉伸 */
+  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* ========================================
+   左侧工具箱样式
+   ======================================== */
+
+/* 左侧工具箱容器 */
+.left-sidebar {
+  width: 360px;
+  background-color: #2a2a2a;
+  display: flex;
+  flex-direction: row-reverse; /* 水平排列，按钮在右，内容在左 */
+  transition: width 0.3s ease; /* 收缩/展开动画 */
+  flex-shrink: 0; /* 防止被压缩 */
+  order: 1; /* 确保在最左侧 */
+  height: 100%; /* 确保占满容器高度 */
+}
+
+/* 左侧工具箱收缩状态 */
+.left-sidebar.collapsed {
+  width: 30px;
+}
+
+/* ========================================
+   画布区域样式
+   ======================================== */
+
+/* 画布区域容器 - 2D/3D画布的容器 */
+.canvas-area {
+  flex: 1; /* 占据剩余空间 */
+  width: 100%;
+  height: 100%;
+  position: relative;
+  min-width: 0; /* 防止flex子元素溢出 */
+  overflow: hidden;
+  order: 2; /* 确保在中间 */
+  min-height: 0; /* 防止flex子元素溢出 */
+  transition: width 0.3s ease, height 0.3s ease; /* 添加平滑过渡效果 */
+  box-sizing: border-box; /* 确保padding和border包含在元素尺寸内 */
+}
+
+/* ========================================
+   右侧属性栏样式
+   ======================================== */
+
+/* 右侧属性栏容器 */
+.right-sidebar {
+  width: 360px;
+  background-color: #2a2a2a;
+  display: flex;
+  flex-direction: row; /* 水平排列，按钮在左，内容在右 */
+  transition: width 0.3s ease; /* 收缩/展开动画 */
+  flex-shrink: 0; /* 防止被压缩 */
+  order: 3; /* 确保在最右侧 */
+  height: 100%; /* 确保占满整个高度 */
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3); /* 添加阴影效果 */
+}
+
+/* 右侧属性栏展开状态 */
+.right-sidebar:not(.collapsed) {
+  width: 360px;
+}
+
+/* 右侧属性栏收缩状态 */
+.right-sidebar.collapsed {
+  width: 30px;
+}
+
+/* ========================================
+   收缩/展开按钮样式
+   ======================================== */
+
+/* 收缩/展开按钮 - 用于左侧工具箱和右侧属性栏 */
+.collapse-button {
+  width: 30px;
+  background-color: #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-left: 1px solid #444;
+  flex-shrink: 0; /* 防止被压缩 */
+}
+
+/* 按钮内的箭头图标 */
+.collapse-button span {
+  color: #ccc;
+  font-size: 16px;
+}
+
+/* ========================================
+   属性面板样式
+   ======================================== */
+
+/* 属性面板容器 - 右侧Tab内容的容器 */
+.properties-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%; /* 确保填满容器 */
+  background-color: #2a2a2a; /* 确保背景色一致 */
+  width: calc(100% - 30px); /* 减去收缩按钮的宽度 */
+}
+
+/* ========================================
+   调色板弹窗样式
+   ======================================== */
+
+/* 调色板弹窗容器 */
+.color-palette {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 居中显示 */
+  background-color: #444;
+  padding: 12px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000; /* 确保在最上层 */
+  min-width: 180px;
+}
+
+/* 颜色网格容器 - 4列网格布局 */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+/* 颜色选项按钮 */
+.color-option {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* 选中的颜色选项 - 白色边框高亮 */
+.color-option.selected {
+  border: 2px solid white;
+}
+
+/* 未选中的颜色选项 - 灰色边框 */
+.color-option:not(.selected) {
+  border: 1px solid #666;
+}
+
+/* 自定义颜色选择器容器 */
+.custom-color-container {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 自定义颜色输入框 */
+.custom-color-input {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 自定义颜色标签文字 */
+.custom-color-label {
+  font-size: 13px;
+  color: white;
+}
+
+/* ========================================
+   左侧工具箱详细样式
+   ======================================== */
+
+/* 左侧工具箱内容区域 */
+.left-sidebar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #333;
+  color: white;
+  overflow: hidden;
+  order: 1; /* 确保在左侧 */
+}
+
+/* 左侧工具箱标题区域 */
+.left-sidebar-header {
+  padding: 8px;
+  border-bottom: 1px solid #555;
+  text-align: center;
+}
+
+/* 左侧工具箱标题文字 */
+.left-sidebar-title {
+  margin: 0;
+  color: white;
+}
+
+/* 左侧工具箱菜单内容区域 - 包含层级菜单 */
+.left-sidebar-menu {
+  flex: 1;
+  overflow-y: auto; /* 内容过多时可滚动 */
+  padding: 10px;
+}
+
+/* ========================================
+   右侧Tab标签页样式
+   ======================================== */
+
+/* 右侧Tab标签页容器 */
+.right-tabs-container {
+  display: flex;
+  justify-content: flex-start;
+  border-bottom: 1px solid #444;
+  background-color: #2a2a2a;
+  flex-shrink: 0; /* 防止被压缩 */
+  width: 100%;
+  height: 40px; /* 固定高度 */
+}
+
+/* 右侧Tab标签 - 包含构建库、属性、层级三个Tab */
+.right-tab {
+  flex: 1; /* 平均分配宽度 */
+  padding: 10px 15px;
+  text-align: center;
+  cursor: pointer;
+  background-color: #2a2a2a;
+  color: #999;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s; /* 平滑过渡效果 */
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap; /* 文字不换行 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 文字过长显示省略号 */
+  height: 100%; /* 占满容器高度 */
+  box-sizing: border-box; /* 确保padding不影响高度 */
+}
+
+/* 激活状态的Tab - 绿色高亮 */
+.right-tab.active {
+  background-color: #333;
+  color: #4CAF50;
+  border-bottom-color: #4CAF50;
+  font-weight: 500;
+}
+
+/* Tab悬停效果 - 仅对非激活状态生效 */
+.right-tab:hover:not(.active) {
+  background-color: #333;
+  color: #ccc;
+}
+
+/* 右侧Tab内容区域 - 显示对应Tab的内容 */
+.right-tab-content {
+  flex: 1;
+  overflow: auto; /* 内容过多时可滚动 */
+  background-color: #2a2a2a;
+  min-height: 0; /* 防止flex子元素溢出 */
+  width: 100%; /* 确保占满容器宽度 */
+  height: calc(100% - 40px); /* 减去Tab标签的高度 */
+}

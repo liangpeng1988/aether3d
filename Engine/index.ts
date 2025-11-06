@@ -1,19 +1,38 @@
+// Engine 入口文件
+// 导出所有核心模块
+
+// Core modules
 export * from './core/Aether3d';
-export * from './core/global';
+export * from './core/RendererSystem';
+export * from './core/SceneManager';
 export * from './core/ScriptBase';
+export * from './core/EngineScripts';
+export * from './core/PerformanceUtils';
+export * from './core/OSUtils';
+export * from './core/LayerManager';
+export * from './core/ObjectMetadata';
+export * from './core/MetadataManager';
+// 导出全局依赖
+export * from './core/global';
+
+// Controllers
+export * from './controllers/MirrorReflectionScript';
 export * from './controllers/OrbitControlsScript';
-export * from './controllers/BlenderCameraControlsScript';
 export * from './controllers/MouseInteractionScript';
-export * from './controllers/EnvironmentMapScript';
+export * from './controllers/SpotlightScript';
+export * from './controllers/FPSDiagnosticTool';
+export * from './controllers/BloomEffectScript';
+export * from './controllers/RectAreaLightScript';
 export * from './controllers/GLBLoaderScript';
+export * from './controllers/EnvironmentMapScript'
+export * from './controllers/Edit/PointLightScript'
+export * from './controllers/FPSOptimizerScript'
+export * from './controllers/CAD/CADLineDrawingScript';
+export * from './controllers/ModelEditorScript';
 export * from './controllers/CSS2DLabelScript';
-export * from './controllers/FPSOptimizerScript';
-export * from './controllers/OutlineEffectScript';
 export * from './controllers/EdgeSelectionScript';
 export * from './controllers/VertexSelectionScript';
 export * from './controllers/FaceSelectionScript';
-export * from './controllers/VertexManipulationController'; // 添加顶点操作控制器导出
-export * from './controllers/Edit/PointLightScript'; // 添加点光源脚本导出
 
 // CAD模块
 export * from './controllers/CAD/LineBase';

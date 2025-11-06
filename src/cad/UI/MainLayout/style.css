@@ -11,40 +11,64 @@
   overflow: hidden; /* 防止内容溢出 */
 }
 
+/* 主内容区域容器 - 分为头部、内容、底部三层 */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 防止flex子元素溢出 */
+  overflow: hidden;
+}
+
 /* ========================================
    顶部区域样式
    ======================================== */
 
-/* 顶部区域容器 - 包含标题栏、菜单栏、工具栏 */
+/* 顶部区域容器 - 固定高度96px */
 .top-area {
+  height: 96px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0; /* 防止被压缩 */
-  width: 100%; /* 确保占满容器宽度 */
-  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+  background-color: #333;
+  color: white;
+  border-bottom: 1px solid #444;
 }
 
 /* 菜单栏容器 */
 .menu-bar-container {
   background-color: #333;
   color: white;
-  transition: all 0.3s ease; /* 添加平滑过渡效果 */
 }
 
 /* ========================================
    中间区域样式
    ======================================== */
 
-/* 中间区域容器 - 包含左侧工具箱、画布、右侧属性栏 */
+/* 中间区域容器 - 自适应剩余空间 */
 .middle-area {
-  flex: 1; /* 占据剩余空间 */
+  flex: 1;
   display: flex;
-  flex-direction: row; /* 明确指定水平排列 */
-  min-height: 0; /* 防止flex子元素溢出 */
+  flex-direction: row;
+  min-height: 0;
   overflow: hidden;
-  height: 100%; /* 确保占满容器高度 */
-  align-items: stretch; /* 确保子元素高度拉伸 */
-  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* ========================================
+   底部区域样式
+   ======================================== */
+
+/* 底部区域容器 - 固定高度30px */
+.bottom-area {
+  height: 30px;
+  flex-shrink: 0;
+  background-color: #2a2a2a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-top: 1px solid #444;
 }
 
 /* ========================================
@@ -56,11 +80,11 @@
   width: 360px;
   background-color: #2a2a2a;
   display: flex;
-  flex-direction: row-reverse; /* 水平排列，按钮在右，内容在左 */
-  transition: width 0.3s ease; /* 收缩/展开动画 */
-  flex-shrink: 0; /* 防止被压缩 */
-  order: 1; /* 确保在最左侧 */
-  height: 100%; /* 确保占满容器高度 */
+  flex-direction: row-reverse;
+  transition: width 0.3s ease;
+  flex-shrink: 0;
+  order: 1;
+  height: 100%;
 }
 
 /* 左侧工具箱收缩状态 */
@@ -74,16 +98,26 @@
 
 /* 画布区域容器 - 2D/3D画布的容器 */
 .canvas-area {
-  flex: 1; /* 占据剩余空间 */
+  flex: 1;
   width: 100%;
   height: 100%;
   position: relative;
-  min-width: 0; /* 防止flex子元素溢出 */
+  min-width: 0;
   overflow: hidden;
-  order: 2; /* 确保在中间 */
-  min-height: 0; /* 防止flex子元素溢出 */
-  transition: width 0.3s ease, height 0.3s ease; /* 添加平滑过渡效果 */
-  box-sizing: border-box; /* 确保padding和border包含在元素尺寸内 */
+  order: 2;
+  min-height: 0;
+  transition: width 0.3s ease, height 0.3s ease;
+  box-sizing: border-box;
+}
+
+/* 全屏画布区域 */
+.canvas-area.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
 }
 
 /* ========================================
@@ -95,12 +129,12 @@
   width: 360px;
   background-color: #2a2a2a;
   display: flex;
-  flex-direction: row; /* 水平排列，按钮在左，内容在右 */
-  transition: width 0.3s ease; /* 收缩/展开动画 */
-  flex-shrink: 0; /* 防止被压缩 */
-  order: 3; /* 确保在最右侧 */
-  height: 100%; /* 确保占满整个高度 */
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3); /* 添加阴影效果 */
+  flex-direction: row;
+  transition: width 0.3s ease;
+  flex-shrink: 0;
+  order: 3;
+  height: 100%;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
 }
 
 /* 右侧属性栏展开状态 */
@@ -126,7 +160,7 @@
   justify-content: center;
   cursor: pointer;
   border-left: 1px solid #444;
-  flex-shrink: 0; /* 防止被压缩 */
+  flex-shrink: 0;
 }
 
 /* 按钮内的箭头图标 */
@@ -145,9 +179,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 100%; /* 确保填满容器 */
-  background-color: #2a2a2a; /* 确保背景色一致 */
-  width: calc(100% - 30px); /* 减去收缩按钮的宽度 */
+  height: 100%;
+  background-color: #2a2a2a;
+  width: calc(100% - 30px);
 }
 
 /* ========================================
@@ -159,12 +193,12 @@
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); /* 居中显示 */
+  transform: translate(-50%, -50%);
   background-color: #444;
   padding: 12px;
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  z-index: 1000; /* 确保在最上层 */
+  z-index: 1000;
   min-width: 180px;
 }
 
@@ -229,7 +263,7 @@
   background-color: #333;
   color: white;
   overflow: hidden;
-  order: 1; /* 确保在左侧 */
+  order: 1;
 }
 
 /* 左侧工具箱标题区域 */
@@ -248,7 +282,7 @@
 /* 左侧工具箱菜单内容区域 - 包含层级菜单 */
 .left-sidebar-menu {
   flex: 1;
-  overflow-y: auto; /* 内容过多时可滚动 */
+  overflow-y: auto;
   padding: 10px;
 }
 
@@ -262,28 +296,28 @@
   justify-content: flex-start;
   border-bottom: 1px solid #444;
   background-color: #2a2a2a;
-  flex-shrink: 0; /* 防止被压缩 */
+  flex-shrink: 0;
   width: 100%;
-  height: 40px; /* 固定高度 */
+  height: 40px;
 }
 
 /* 右侧Tab标签 - 包含构建库、属性、层级三个Tab */
 .right-tab {
-  flex: 1; /* 平均分配宽度 */
+  flex: 1;
   padding: 10px 15px;
   text-align: center;
   cursor: pointer;
   background-color: #2a2a2a;
   color: #999;
   border-bottom: 2px solid transparent;
-  transition: all 0.3s; /* 平滑过渡效果 */
+  transition: all 0.3s;
   font-size: 14px;
   font-weight: 400;
-  white-space: nowrap; /* 文字不换行 */
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* 文字过长显示省略号 */
-  height: 100%; /* 占满容器高度 */
-  box-sizing: border-box; /* 确保padding不影响高度 */
+  text-overflow: ellipsis;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 /* 激活状态的Tab - 绿色高亮 */
@@ -303,9 +337,9 @@
 /* 右侧Tab内容区域 - 显示对应Tab的内容 */
 .right-tab-content {
   flex: 1;
-  overflow: auto; /* 内容过多时可滚动 */
+  overflow: auto;
   background-color: #2a2a2a;
-  min-height: 0; /* 防止flex子元素溢出 */
-  width: 100%; /* 确保占满容器宽度 */
-  height: calc(100% - 40px); /* 减去Tab标签的高度 */
+  min-height: 0;
+  width: 100%;
+  height: calc(100% - 40px);
 }

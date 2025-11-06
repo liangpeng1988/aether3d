@@ -1419,67 +1419,86 @@ const MainLayout: React.FC = () => {
         />
       ) : (
         <>
-          {/* 顶部菜单栏 */}
-          <div className="top-toolbar">
-            <MenuBar 
-              onNewDocument={handleNewDocument}
-              onOpenDocument={handleOpenDocument}
-              onSaveDocument={handleSaveDocumentFromMenu}
-              onImportGLBModel={handleImportGLBModel}
-              onUndo={handleUndo}
-              onRedo={handleRedo}
-            />
+          {/* 顶部区域 - 固定高度96px */}
+          <div className="top-area">
+            {/* 顶部菜单栏 */}
+            <div className="top-toolbar">
+              <MenuBar 
+                onNewDocument={handleNewDocument}
+                onOpenDocument={handleOpenDocument}
+                onSaveDocument={handleSaveDocumentFromMenu}
+                onImportGLBModel={handleImportGLBModel}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+              />
+            </div>
+
+            {/* 顶部工具栏 */}
+            <div className="top-toolbar-secondary">
+              <Toolbar 
+                onDrawLine={handleDrawLine}
+                onDrawCircle={handleDrawCircle}
+                onDrawRectangle={handleDrawRectangle}
+                onDrawPolygon={handleDrawPolygon}
+                onDimensionLinear={handleDimensionLinear}
+                onDimensionAligned={handleDimensionAligned}
+                onDimensionAngular={handleDimensionAngular}
+                onDimensionDiameter={handleDimensionDiameter}
+                onDimensionRadius={handleDimensionRadius}
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onZoomExtent={handleZoomExtent}
+                onOrbit={handleOrbit}
+                onTopView={handleTopView}
+                onFrontView={handleFrontView}
+                onSideView={handleSideView}
+                onNewDocument={handleNewDocument}
+                onOpenDocument={handleOpenDocument}
+                onSaveDocument={handleSaveDocumentFromMenu}
+                onUploadBuild={handleUploadBuild}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                canUndo={canUndo}
+                canRedo={canRedo}
+                onCut={handleCut}
+                onCopy={handleCopy}
+                onPaste={handlePaste}
+                onSelectAll={handleSelectAll}
+                onDeselectAll={handleDeselect}
+                onInvertSelection={handleInvertSelection}
+                onBoxSelect={handleBoxSelect}
+                onSetTranslateMode={handleSetTranslateMode}
+                onSetRotateMode={handleSetRotateMode}
+                onSetScaleMode={handleSetScaleMode}
+                currentTransformMode={transformMode}
+                onToggleTransformSpace={handleToggleTransformSpace}
+                currentTransformSpace={transformSpace}
+                onToggleViewMode={toggleViewMode}
+                is3DView={is3DView}
+                onLayerManager={handleOpenLayerManager}
+              />
+            </div>
           </div>
 
-          {/* 顶部工具栏 */}
-            <Toolbar 
-              onDrawLine={handleDrawLine}
-              onDrawCircle={handleDrawCircle}
-              onDrawRectangle={handleDrawRectangle}
-              onDrawPolygon={handleDrawPolygon}
-              onDimensionLinear={handleDimensionLinear}
-              onDimensionAligned={handleDimensionAligned}
-              onDimensionAngular={handleDimensionAngular}
-              onDimensionDiameter={handleDimensionDiameter}
-              onDimensionRadius={handleDimensionRadius}
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onZoomExtent={handleZoomExtent}
-              onOrbit={handleOrbit}
-              onTopView={handleTopView}
-              onFrontView={handleFrontView}
-              onSideView={handleSideView}
-              onNewDocument={handleNewDocument}
-              onOpenDocument={handleOpenDocument}
-              onSaveDocument={handleSaveDocumentFromMenu}
-              onUploadBuild={handleUploadBuild}
-              onUndo={handleUndo}
-              onRedo={handleRedo}
-              canUndo={canUndo}
-              canRedo={canRedo}
-              onCut={handleCut}
-              onCopy={handleCopy}
-              onPaste={handlePaste}
-              onSelectAll={handleSelectAll}
-              onDeselectAll={handleDeselect}
-              onInvertSelection={handleInvertSelection}
-              onBoxSelect={handleBoxSelect}
-              onSetTranslateMode={handleSetTranslateMode}
-              onSetRotateMode={handleSetRotateMode}
-              onSetScaleMode={handleSetScaleMode}
-              currentTransformMode={transformMode}
-              onToggleTransformSpace={handleToggleTransformSpace}
-              currentTransformSpace={transformSpace}
-              onToggleViewMode={toggleViewMode}
-              is3DView={is3DView}
-              onLayerManager={handleOpenLayerManager}
-            />
+          {/* 中间区域 - 自适应剩余空间 */}
+          <div className="middle-area">
+            {/* 左侧工具栏 */}
+            <div className="left-toolbar">
+              <Toolbar3D 
+                onTranslate={handleSetTranslateMode}
+                onRotate={handleSetRotateMode}
+                onScale={handleSetScaleMode}
+                onSelect={handleSelect}
+                onVertexSelect={handleVertexSelect}
+                onEdgeSelect={handleEdgeSelect}
+                onFaceSelect={handleFaceSelect}
+                activeTool={transformMode || 'select'}
+              />
+            </div>
 
-          {/* 主内容区域 */}
-          <div className="main-content">
             {/* 中间画布区域 */}
-            <div className="canvas-area">
-              {/* {is3DView ? (
+            <div className={`canvas-area ${isFullscreen ? 'fullscreen' : ''}`}>
+              {is3DView ? (
                 <Canvas3D
                   ref={canvas3DRef}
                   backgroundColor={backgroundColor}
@@ -1510,7 +1529,7 @@ const MainLayout: React.FC = () => {
                   onDimensionCreated={handleDimensionCreated}
                   onObjectSelected={handleObjectSelected}
                 />
-              )} */}
+              )}
             </div>
 
             {/* 右侧属性栏 */}
@@ -1522,14 +1541,16 @@ const MainLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* 底部任务栏 */}
-          <TaskBar
-            documentName={documentName}
-            currentLayerName={currentLayerId}
-            lineCount={drawnLines.length}
-            isDrawingMode={isDrawingMode}
-            cameraPosition={{ x: cameraPosition[0], y: cameraPosition[1], z: cameraPosition[2] }}
-          />
+          {/* 底部区域 - 固定高度30px */}
+          <div className="bottom-area">
+            <TaskBar
+              documentName={documentName}
+              currentLayerName={currentLayerId}
+              lineCount={drawnLines.length}
+              isDrawingMode={isDrawingMode}
+              cameraPosition={{ x: cameraPosition[0], y: cameraPosition[1], z: cameraPosition[2] }}
+            />
+          </div>
         </>
       )}
     </div>

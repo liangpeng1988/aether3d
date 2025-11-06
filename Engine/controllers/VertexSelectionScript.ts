@@ -26,18 +26,6 @@ interface VertexGeometryCacheItem {
 }
 
 /**
- * 顶点信息接口
- */
-interface VertexInfo {
-    /** 顶点索引 */
-    index: number;
-    /** 顶点位置 */
-    position: THREE.Vector3;
-    /** 顶点辅助对象 */
-    helper: THREE.Points;
-}
-
-/**
  * Mesh顶点选择脚本
  * 实现Mesh对象的顶点高亮显示功能
  */
@@ -64,12 +52,6 @@ export class VertexSelectionScript extends ScriptBase {
 
     /** 是否启用调试日志 */
     private debugMode = false;
-
-    /** 当前选中的顶点 */
-    private selectedVertex: VertexInfo | null = null;
-
-    /** 顶点点击回调函数 */
-    private onVertexClickCallbacks: Array<(vertex: VertexInfo | null, object: THREE.Object3D | null) => void> = [];
 
     constructor(options?: VertexSelectionConfig) {
         super();
@@ -178,7 +160,6 @@ export class VertexSelectionScript extends ScriptBase {
     public clearSelection(): void {
         this.selectedObjects = [];
         this.clearAllVertexHelpers();
-        this.selectedVertex = null;
     }
 
     /**
@@ -530,113 +511,5 @@ export class VertexSelectionScript extends ScriptBase {
      */
     public clearCache(): void {
         this.clearVertexGeometryCache();
-    }
-
-    /**
-     * 处理顶点点击事件
-     * @param vertexIndex 顶点索引
-     * @param object 目标对象
-     */
-    public handleVertexClick(vertexIndex: number, object: THREE.Object3D): void {
-        // 获取对象的几何体
-        if (!(object instanceof THREE.Mesh)) return;
-        
-        const geometry = object.geometry;
-        if (!geometry || !geometry.attributes.position) return;
-        
-        // 获取顶点位置
-        const positions = geometry.attributes.position.array;
-        const index = vertexIndex * 3;
-        
-        if (index + 2 >= positions.length) return;
-        
-        const vertexPosition = new THREE.Vector3(
-            positions[index],
-            positions[index + 1],
-            positions[index + 2]
-        );
-        
-        // 转换到世界坐标
-        vertexPosition.applyMatrix4(object.matrixWorld);
-        
-        // 创建顶点信息
-        const vertexInfo: VertexInfo = {
-            index: vertexIndex,
-            position: vertexPosition,
-            helper: this.vertexHelpers.get(object.uuid)!
-        };
-        
-        // 设置选中的顶点
-        this.selectedVertex = vertexInfo;
-        
-        // 调用回调函数
-        this.onVertexClickCallbacks.forEach(callback => callback(vertexInfo, object));
-        
-        if (this.debugMode) {
-            console.log('[VertexSelectionScript] 顶点被点击:', vertexIndex, vertexPosition);
-        }
-    }
-
-    /**
-     * 移动选中的顶点
-     * @param delta 移动向量
-     */
-    public moveSelectedVertex(delta: THREE.Vector3): void {
-        if (!this.selectedVertex || !this.selectedVertex.helper.userData.targetObject) return;
-        
-        const object = this.selectedVertex.helper.userData.targetObject as THREE.Mesh;
-        const geometry = object.geometry;
-        
-        if (!geometry || !geometry.attributes.position) return;
-        
-        // 获取顶点位置数组
-        const positions = geometry.attributes.position.array as Float32Array;
-        const index = this.selectedVertex.index * 3;
-        
-        if (index + 2 >= positions.length) return;
-        
-        // 更新顶点位置
-        positions[index] += delta.x;
-        positions[index + 1] += delta.y;
-        positions[index + 2] += delta.z;
-        
-        // 标记几何体属性需要更新
-        geometry.attributes.position.needsUpdate = true;
-        
-        // 如果有法线，也需要重新计算
-        if (geometry.attributes.normal) {
-            geometry.computeVertexNormals();
-        }
-        
-        // 更新顶点辅助对象的位置
-        this.selectedVertex.position.add(delta);
-        
-        if (this.debugMode) {
-            console.log('[VertexSelectionScript] 顶点移动:', this.selectedVertex.index, delta);
-        }
-    }
-
-    /**
-     * 设置顶点点击回调
-     * @param callback 回调函数
-     */
-    public setOnVertexClickCallback(callback: (vertex: VertexInfo | null, object: THREE.Object3D | null) => void): void {
-        this.onVertexClickCallbacks = [callback];
-    }
-
-    /**
-     * 添加顶点点击回调
-     * @param callback 回调函数
-     */
-    public addOnVertexClickCallback(callback: (vertex: VertexInfo | null, object: THREE.Object3D | null) => void): void {
-        this.onVertexClickCallbacks.push(callback);
-    }
-
-    /**
-     * 获取选中的顶点
-     * @returns 选中的顶点信息
-     */
-    public getSelectedVertex(): VertexInfo | null {
-        return this.selectedVertex;
     }
 }

@@ -93,9 +93,11 @@ const Toolbar3D: React.FC<Toolbar3DProps> = ({
         title="边选择 (2)"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="2"/>
-          <circle cx="4" cy="12" r="3" fill="currentColor"/>
-          <circle cx="20" cy="12" r="3" fill="currentColor"/>
+          <path d="M6 6L18 6" stroke="currentColor" strokeWidth="2"/>
+          <path d="M6 18L18 18" stroke="currentColor" strokeWidth="2"/>
+          <path d="M6 6L6 18" stroke="currentColor" strokeWidth="2"/>
+          <path d="M18 6L18 18" stroke="currentColor" strokeWidth="2"/>
+          <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2"/>
         </svg>
       </div>
       
@@ -105,13 +107,10 @@ const Toolbar3D: React.FC<Toolbar3DProps> = ({
         title="面选择 (3)"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
-          <path d="M4 12L20 12" stroke="currentColor" strokeWidth="1"/>
-          <path d="M12 4L12 20" stroke="currentColor" strokeWidth="1"/>
+          <rect x="4" y="4" width="16" height="16" fill="currentColor"/>
+          <path d="M4 4L20 20" stroke="white" strokeWidth="1"/>
         </svg>
       </div>
-      
-      <div className="toolbar-divider" />
       
       <div 
         className={`toolbar-button ${activeTool === 'translate' ? 'active' : ''}`}
@@ -119,12 +118,10 @@ const Toolbar3D: React.FC<Toolbar3DProps> = ({
         title="移动 (W)"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L12 22" stroke="currentColor" strokeWidth="2"/>
-          <path d="M2 12L22 12" stroke="currentColor" strokeWidth="2"/>
-          <path d="M12 2L15 7" stroke="currentColor" strokeWidth="2"/>
-          <path d="M12 2L9 7" stroke="currentColor" strokeWidth="2"/>
-          <path d="M22 12L17 9" stroke="currentColor" strokeWidth="2"/>
-          <path d="M22 12L17 15" stroke="currentColor" strokeWidth="2"/>
+          <path d="M13 6L16 9L13 12V10H8V12L5 9L8 6V8H13V6Z" fill="currentColor"/>
+          <path d="M11 18L8 15L11 12V14H16V12L19 15L16 18V16H11V18Z" fill="currentColor"/>
+          <path d="M18 13L15 16L12 13H14V8H12L15 5L18 8V10H16V13H18Z" fill="currentColor"/>
+          <path d="M6 11L9 8L12 11H10V16H12L9 19L6 16V14H8V11H6Z" fill="currentColor"/>
         </svg>
       </div>
       
@@ -134,9 +131,8 @@ const Toolbar3D: React.FC<Toolbar3DProps> = ({
         title="旋转 (E)"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
-          <path d="M20 12L17 9" stroke="currentColor" strokeWidth="2"/>
-          <path d="M20 12L17 15" stroke="currentColor" strokeWidth="2"/>
+          <path d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" fill="currentColor"/>
+          <path d="M13 7H11V11H7V13H11V17H13V13H17V11H13V7Z" fill="currentColor"/>
         </svg>
       </div>
       
@@ -146,9 +142,9 @@ const Toolbar3D: React.FC<Toolbar3DProps> = ({
         title="缩放 (R)"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
-          <path d="M9 9L15 15" stroke="currentColor" strokeWidth="2"/>
-          <path d="M15 9L9 15" stroke="currentColor" strokeWidth="2"/>
+          <path d="M21 3H3V21H21V3ZM19 19H5V5H19V19Z" fill="currentColor"/>
+          <path d="M16 13H13V16H11V13H8V11H11V8H13V11H16V13Z" fill="currentColor"/>
+          <path d="M11 1H13V3H11V1ZM11 21H13V23H11V21ZM1 11H3V13H1V11ZM21 11H23V13H21V11Z" fill="currentColor"/>
         </svg>
       </div>
     </div>

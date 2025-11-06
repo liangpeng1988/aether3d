@@ -47,7 +47,6 @@ interface MenuBarProps {
   onAIAutoDesign?: () => void;
   onAIOptimize?: () => void;
   onAIAnalyze?: () => void;
-  onToggleToolbarFeatures?: () => void; // 添加切换工具栏功能回调
 }
 
 const MenuBar: React.FC<MenuBarProps> = ({
@@ -87,8 +86,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
   onAIChat,
   onAIAutoDesign,
   onAIOptimize,
-  onAIAnalyze,
-  onToggleToolbarFeatures // 添加切换工具栏功能回调
+  onAIAnalyze
 }) => {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
@@ -156,9 +154,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
         { id: 'separator2', label: '-' },
         { id: 'top-view', label: '顶视图', action: onTopView },
         { id: 'front-view', label: '前视图', action: onFrontView },
-        { id: 'side-view', label: '侧视图', action: onSideView },
-        { id: 'separator3', label: '-' },
-        { id: 'toggle-toolbar-features', label: '切换工具栏功能', action: onToggleToolbarFeatures }
+        { id: 'side-view', label: '侧视图', action: onSideView }
       ]
     },
     {
